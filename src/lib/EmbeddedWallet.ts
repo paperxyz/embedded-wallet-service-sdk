@@ -1,54 +1,30 @@
 import { PAPER_APP_URL_ALT } from "../constants/settings";
-import { postMessageToIframe } from "../utils/postMessageToIframe";
-import { EthersSigner } from "./Signer";
+import { IframeCommunicator } from "../utils/IframeCommunicator";
+import { EthersSigner, SignerProcedureTypes } from "./Signer";
 
 function createEmbeddedWalletLink({ clientId }: { clientId: string }) {
-  return new URL(`/wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
+  return new URL(`/embedded-wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
 }
 
-export enum EmbeddedWalletEvents {
-  GET_SIGNER = "GET_SIGNER",
-}
+// for now, might add more to this in a bit
+type QueryTypes = SignerProcedureTypes;
 
 export class EmbeddedWallet {
   protected EMBEDDED_WALLET_IFRAME = "paper-embedded-wallet-iframe";
 
   protected clientId: string;
-  protected iframe: HTMLIFrameElement;
+  protected querier: IframeCommunicator<QueryTypes>;
+
   constructor({ clientId }: { clientId: string }) {
     this.clientId = clientId;
-
-    // Creating the IFrame element for communication
-    let iframe = document.getElementById(
-      this.EMBEDDED_WALLET_IFRAME
-    ) as HTMLIFrameElement | null;
-
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.src = createEmbeddedWalletLink({ clientId }).href;
-      iframe.setAttribute(
-        "style",
-        "width: 0px; height: 0px; visibility: hidden;"
-      );
-      iframe.setAttribute("id", this.EMBEDDED_WALLET_IFRAME);
-      document.body.appendChild(iframe);
-    }
-    this.iframe = iframe;
+    this.querier = new IframeCommunicator({
+      iframeId: this.EMBEDDED_WALLET_IFRAME,
+      link: createEmbeddedWalletLink({ clientId }).href,
+    });
   }
 
   async getSigner() {
-    postMessageToIframe(this.iframe, EmbeddedWalletEvents.GET_SIGNER, {});
-    const promise = new Promise((res, rej) => {
-      window.addEventListener("message", (e: MessageEvent) => {
-        console.log("e.data", e.data);
-        switch (e.data.eventType) {
-          case "UserAddress": {
-            res("dones");
-          }
-        }
-      });
-    });
-    const ethersSigner = new EthersSigner();
-    return promise;
+    const signer = new EthersSigner({ querier: this.querier });
+    return signer.init();
   }
 }

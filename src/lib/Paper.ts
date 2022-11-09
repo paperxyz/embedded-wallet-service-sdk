@@ -6,6 +6,7 @@ export class PaperClient {
 
   User: EmbeddedWallet;
   Login: Login;
+
   constructor({ clientId }: { clientId: string }) {
     this.clientId = clientId;
     this.Login = new Login();

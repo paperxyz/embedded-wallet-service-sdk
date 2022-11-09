@@ -1,0 +1,98 @@
+type MessageType<T> =
+  | {
+      eventType: string;
+      success: true;
+      data: T;
+    }
+  | {
+      eventType: string;
+      success: false;
+      error: Error;
+    };
+
+export type IFrameCommunicatorProps = { link: string; iframeId: string };
+
+export class IframeCommunicator<T extends { [key: string]: any }> {
+  private iframe: HTMLIFrameElement;
+  private isLoaded: boolean;
+  constructor({ link, iframeId }: IFrameCommunicatorProps) {
+    this.isLoaded = false;
+
+    // Creating the IFrame element for communication
+    let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
+
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.src = link;
+      iframe.setAttribute(
+        "style",
+        "width: 0px; height: 0px; visibility: hidden;"
+      );
+      iframe.setAttribute("id", iframeId);
+      document.body.appendChild(iframe);
+
+      const iframeDoc =
+        iframe.contentDocument || iframe.contentWindow?.document;
+      // Check if loading is complete
+      this.isLoaded = iframeDoc?.readyState == "complete";
+    }
+    this.iframe = iframe;
+  }
+
+  async init() {
+    const INII_IFRAME_EVENT = "initIFrame";
+    if (!this.isLoaded) {
+      console.log("not loaded");
+      const promise = new Promise<boolean>((res, rej) => {
+        const channel = new MessageChannel();
+        this.iframe.addEventListener("load", () => {
+          channel.port1.onmessage = (
+            event: MessageEvent<MessageType<void>>
+          ) => {
+            const { data } = event;
+            channel.port1.close();
+            if (!data.success) {
+              return rej(data.error);
+            }
+            return res(true);
+          };
+
+          if (this.iframe.contentWindow) {
+            this.iframe.contentWindow.postMessage(
+              { eventType: INII_IFRAME_EVENT },
+              "*",
+              [channel.port2]
+            );
+          }
+        });
+      });
+
+      const result = await promise;
+      if (result) {
+        this.isLoaded = true;
+      }
+    }
+  }
+
+  async call<ReturnData>(procedureName: keyof T, params: T[keyof T]) {
+    const promise = new Promise<ReturnData>((res, rej) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (
+        event: MessageEvent<MessageType<ReturnData>>
+      ) => {
+        const { data } = event;
+        channel.port1.close();
+        if (!data.success) {
+          return rej(data.error);
+        }
+        return res(data.data);
+      };
+      this.iframe.contentWindow?.postMessage(
+        { eventType: procedureName, data: params },
+        "*",
+        [channel.port2]
+      );
+    });
+    return promise;
+  }
+}
