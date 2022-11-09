@@ -30,41 +30,44 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       );
       iframe.setAttribute("id", iframeId);
       document.body.appendChild(iframe);
-
-      const iframeDoc =
-        iframe.contentDocument || iframe.contentWindow?.document;
-      // Check if loading is complete
-      this.isLoaded = iframeDoc?.readyState == "complete";
+      this.iframe = iframe;
+    } else {
+      this.iframe = iframe;
+      this.isLoaded = true;
     }
-    this.iframe = iframe;
   }
 
   async init() {
-    const INII_IFRAME_EVENT = "initIFrame";
+    const INIT_IFRAME_EVENT = "initIframe";
     if (!this.isLoaded) {
-      console.log("not loaded");
       const promise = new Promise<boolean>((res, rej) => {
         const channel = new MessageChannel();
-        this.iframe.addEventListener("load", () => {
-          channel.port1.onmessage = (
-            event: MessageEvent<MessageType<void>>
-          ) => {
-            const { data } = event;
-            channel.port1.close();
-            if (!data.success) {
-              return rej(data.error);
-            }
-            return res(true);
-          };
+        this.iframe.addEventListener(
+          "load",
+          () => {
+            channel.port1.onmessage = (
+              event: MessageEvent<MessageType<void>>
+            ) => {
+              const { data } = event;
+              channel.port1.close();
+              if (!data.success) {
+                return rej(data.error);
+              }
+              return res(true);
+            };
 
-          if (this.iframe.contentWindow) {
-            this.iframe.contentWindow.postMessage(
-              { eventType: INII_IFRAME_EVENT },
-              "*",
-              [channel.port2]
-            );
+            if (this.iframe.contentWindow) {
+              this.iframe.contentWindow.postMessage(
+                { eventType: INIT_IFRAME_EVENT },
+                "*",
+                [channel.port2]
+              );
+            }
+          },
+          {
+            once: true,
           }
-        });
+        );
       });
 
       const result = await promise;
