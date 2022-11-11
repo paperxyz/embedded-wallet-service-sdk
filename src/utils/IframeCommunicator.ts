@@ -1,3 +1,5 @@
+import { PAPER_APP_URL_ALT } from "../constants/settings";
+
 type MessageType<T> =
   | {
       eventType: string;
@@ -37,6 +39,8 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     }
   }
 
+  // TODO: Make sure that we load iFrame before making any post calls.
+  // This currently doesn't work well with React's strict mode
   async init() {
     const INIT_IFRAME_EVENT = "initIframe";
     if (!this.isLoaded) {
@@ -99,3 +103,9 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     return promise;
   }
 }
+
+// This is the URL and ID tag of the iFrame that we communicate with
+export function createEmbeddedWalletLink({ clientId }: { clientId: string }) {
+  return new URL(`/embedded-wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
+}
+export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";

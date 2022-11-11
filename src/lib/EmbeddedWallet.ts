@@ -1,30 +1,51 @@
-import { PAPER_APP_URL_ALT } from "../constants/settings";
-import { IframeCommunicator } from "../utils/IframeCommunicator";
-import { EthersSigner, SignerProcedureTypes } from "./Signer";
+import { ethers } from "ethers";
+import {
+  createEmbeddedWalletLink,
+  EMBEDDED_WALLET_IFRAME_ID,
+  IframeCommunicator,
+} from "../utils/IframeCommunicator";
+import { EthersSigner } from "./Signer";
 
-function createEmbeddedWalletLink({ clientId }: { clientId: string }) {
-  return new URL(`/embedded-wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
-}
-
-// for now, might add more to this in a bit
-type QueryTypes = SignerProcedureTypes;
+export type WalletManagementTypes = {
+  createWallet: { recoveryPassword: string };
+};
 
 export class EmbeddedWallet {
-  protected EMBEDDED_WALLET_IFRAME = "paper-embedded-wallet-iframe";
-
   protected clientId: string;
-  protected querier: IframeCommunicator<QueryTypes>;
+  protected walletManagerQuerier: IframeCommunicator<WalletManagementTypes>;
 
   constructor({ clientId }: { clientId: string }) {
     this.clientId = clientId;
-    this.querier = new IframeCommunicator({
-      iframeId: this.EMBEDDED_WALLET_IFRAME,
+
+    this.walletManagerQuerier = new IframeCommunicator({
+      iframeId: EMBEDDED_WALLET_IFRAME_ID,
       link: createEmbeddedWalletLink({ clientId }).href,
     });
   }
 
-  async getSigner() {
-    const signer = new EthersSigner({ querier: this.querier });
+  async createWallet({
+    recoveryPassword,
+  }: {
+    recoveryPassword: string;
+  }): Promise<{ walletAddress: string }> {
+    await this.walletManagerQuerier.init();
+    return this.walletManagerQuerier.call<{ walletAddress: string }>(
+      "createWallet",
+      {
+        recoveryPassword,
+      }
+    );
+  }
+
+  async getSigner({
+    rpcEndpoint,
+  }: {
+    rpcEndpoint?: ethers.providers.Networkish;
+  }) {
+    const signer = new EthersSigner({
+      clientId: this.clientId,
+      provider: ethers.getDefaultProvider(rpcEndpoint),
+    });
     return signer.init();
   }
 }
