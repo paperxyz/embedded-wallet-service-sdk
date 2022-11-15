@@ -1,12 +1,35 @@
-import { Chains, ContractCallType } from "../../interfaces/EmbededWallets";
+import type {
+  Chains,
+  PaperConstructorType,
+} from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type {
+  ContractCallInputType,
+  ContractCallReturnType,
+} from "../../interfaces/EmbeddedWallets/GaslessTransactionMaker";
+import {
+  createEmbeddedWalletIframeLink,
+  EMBEDDED_WALLET_IFRAME_ID,
+  IframeCommunicator,
+} from "../../utils/IframeCommunicator";
+
+export type GaslessTransactionQuerierTypes = {
+  callContract: ContractCallInputType;
+};
 
 /**
  * @description GaslessTransactionMaker is used to execute gasless transactions from the embedded wallets
  */
 export class GaslessTransactionMaker {
   protected chain: Chains;
-  constructor({ chain }: { chain: Chains }) {
+  protected clientId: string;
+  protected gaslessTransactionQuerier: IframeCommunicator<GaslessTransactionQuerierTypes>;
+  constructor({ chain, clientId }: PaperConstructorType) {
     this.chain = chain;
+    this.clientId = clientId;
+    this.gaslessTransactionQuerier = new IframeCommunicator({
+      iframeId: EMBEDDED_WALLET_IFRAME_ID,
+      link: createEmbeddedWalletIframeLink({ clientId }).href,
+    });
   }
   /**
    * Use to call arbitrary contracts on the blockchain
@@ -14,7 +37,14 @@ export class GaslessTransactionMaker {
   async contract({
     contractAddress,
     method,
-  }: ContractCallType) {
+  }: ContractCallInputType): Promise<ContractCallReturnType> {
     console.log("contractAddress, method", contractAddress, method);
+    return await this.gaslessTransactionQuerier.call<ContractCallReturnType>(
+      "callContract",
+      {
+        contractAddress,
+        method,
+      }
+    );
   }
 }

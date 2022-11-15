@@ -1,13 +1,4 @@
-// General Embedded wallet types
-export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
-
-export type WalletDetailsType = {
-  chain: Chains;
-  limit: number;
-  offset: number;
-};
-
-export type ContractCallType = {
+export type ContractCallInputType = {
   contractAddress: string;
   method: {
     stub: `function ${string}(${string})`;
@@ -22,5 +13,4 @@ export type ContractCallType = {
   };
 };
 
-// Class constructor types
-export type EmbeddedWalletConstructorType = { clientId: string; chain: Chains };
+export type ContractCallReturnType = {transactionHash: string}

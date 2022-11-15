@@ -1,7 +1,8 @@
-import { getDefaultProvider, Networkish } from "@ethersproject/providers";
-import { EmbeddedWalletConstructorType } from "../../interfaces/EmbededWallets";
+import type { Networkish } from "@ethersproject/providers";
+import { getDefaultProvider } from "@ethersproject/providers";
+import type { PaperConstructorType } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import {
-  createEmbeddedWalletLink,
+  createEmbeddedWalletIframeLink,
   EMBEDDED_WALLET_IFRAME_ID,
   IframeCommunicator,
 } from "../../utils/IframeCommunicator";
@@ -20,16 +21,19 @@ export class EmbeddedWallet {
   public walletHoldings: EmbeddedWalletHoldings;
   public write: GaslessTransactionMaker;
 
-  constructor({ clientId, chain }: EmbeddedWalletConstructorType) {
+  constructor({ clientId, chain }: PaperConstructorType) {
     this.clientId = clientId;
 
     this.walletManagerQuerier = new IframeCommunicator({
       iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletLink({ clientId }).href,
+      link: createEmbeddedWalletIframeLink({ clientId }).href,
     });
 
-    this.walletHoldings = new EmbeddedWalletHoldings();
-    this.write = new GaslessTransactionMaker({ chain });
+    this.walletHoldings = new EmbeddedWalletHoldings({
+      chain,
+      clientId,
+    });
+    this.write = new GaslessTransactionMaker({ chain, clientId });
   }
 
   async createWallet({
@@ -37,7 +41,6 @@ export class EmbeddedWallet {
   }: {
     recoveryPassword: string;
   }): Promise<{ walletAddress: string }> {
-    await this.walletManagerQuerier.init();
     return this.walletManagerQuerier.call<{ walletAddress: string }>(
       "createWallet",
       {
@@ -51,6 +54,6 @@ export class EmbeddedWallet {
       clientId: this.clientId,
       provider: getDefaultProvider(rpcEndpoint),
     });
-    return signer.init();
+    return signer;
   }
 }

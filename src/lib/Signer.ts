@@ -1,9 +1,18 @@
-import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
+import type {
+  Provider,
+  TransactionRequest,
+} from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
-import { Bytes } from "@ethersproject/bytes";
-import { Deferrable, defineReadOnly } from "@ethersproject/properties";
+import type { Bytes } from "@ethersproject/bytes";
+import type { Deferrable } from "@ethersproject/properties";
+import { defineReadOnly } from "@ethersproject/properties";
+import type {
+  GetAddressReturnType,
+  SignMessageReturnType,
+  SignTransactionReturnType,
+} from "../interfaces/Signer";
 import {
-  createEmbeddedWalletLink,
+  createEmbeddedWalletIframeLink,
   EMBEDDED_WALLET_IFRAME_ID,
   IframeCommunicator,
 } from "../utils/IframeCommunicator";
@@ -32,42 +41,37 @@ export class EthersSigner extends Signer {
     this.clientId = clientId;
     this.querier = new IframeCommunicator({
       iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletLink({ clientId }).href,
+      link: createEmbeddedWalletIframeLink({ clientId }).href,
     });
     defineReadOnly(this, "provider", provider || null);
   }
 
-  async init() {
-    await this.querier.init();
-    return this;
-  }
-
   override async getAddress(): Promise<string> {
-    const { address } = await this.querier.call<{ address: string }>(
+    const { address } = await this.querier.call<GetAddressReturnType>(
       "getAddress"
     );
     return address;
   }
 
   override async signMessage(message: string | Bytes): Promise<string> {
-    const { signedMessage } = await this.querier.call<{
-      signedMessage: string;
-    }>("signMessage", {
-      message,
-      chainId: (await this.provider?.getNetwork())?.chainId,
-    });
+    const { signedMessage } = await this.querier.call<SignMessageReturnType>(
+      "signMessage",
+      {
+        message,
+        chainId: (await this.provider?.getNetwork())?.chainId,
+      }
+    );
     return signedMessage;
   }
 
   override async signTransaction(
     transaction: TransactionRequest
   ): Promise<string> {
-    const { signedTransaction } = await this.querier.call<{
-      signedTransaction: string;
-    }>("signTransaction", {
-      transaction,
-      chainId: (await this.provider?.getNetwork())?.chainId,
-    });
+    const { signedTransaction } =
+      await this.querier.call<SignTransactionReturnType>("signTransaction", {
+        transaction,
+        chainId: (await this.provider?.getNetwork())?.chainId,
+      });
     return signedTransaction;
   }
 

@@ -1,25 +1,22 @@
 import { PAPER_APP_URL_ALT } from "../constants/settings";
-
-type MessageType<T> =
-  | {
-      eventType: string;
-      success: true;
-      data: T;
-    }
-  | {
-      eventType: string;
-      success: false;
-      error: Error;
-    };
+import type { MessageType } from "../interfaces/utils/IframeCommunicator";
 
 export type IFrameCommunicatorProps = { link: string; iframeId: string };
 
+function sleep(seconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, seconds * 1000);
+  });
+}
+
+// Global var to help track iframe state
+let isIframeLoaded = false;
+
 export class IframeCommunicator<T extends { [key: string]: any }> {
   private iframe: HTMLIFrameElement;
-  private isLoaded: boolean;
+  private POLLING_INTERVAL_SECONDS = 1.4;
+  private POST_LOAD_BUFFER_SECONDS = 1;
   constructor({ link, iframeId }: IFrameCommunicatorProps) {
-    this.isLoaded = false;
-
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
 
@@ -32,57 +29,45 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       );
       iframe.setAttribute("id", iframeId);
       document.body.appendChild(iframe);
-      this.iframe = iframe;
-    } else {
-      this.iframe = iframe;
-      this.isLoaded = true;
-    }
-  }
-
-  // TODO: Make sure that we load iFrame before making any post calls.
-  // This currently doesn't work well with React's strict mode
-  async init() {
-    const INIT_IFRAME_EVENT = "initIframe";
-    if (!this.isLoaded) {
-      const promise = new Promise<boolean>((res, rej) => {
-        const channel = new MessageChannel();
-        this.iframe.addEventListener(
-          "load",
-          () => {
-            channel.port1.onmessage = (
-              event: MessageEvent<MessageType<void>>
-            ) => {
-              const { data } = event;
-              channel.port1.close();
-              if (!data.success) {
-                return rej(data.error);
-              }
-              return res(true);
-            };
-
-            if (this.iframe.contentWindow) {
-              this.iframe.contentWindow.postMessage(
-                { eventType: INIT_IFRAME_EVENT },
-                "*",
-                [channel.port2]
-              );
+      const channel = new MessageChannel();
+      iframe.onload = async () => {
+        const promise = new Promise<boolean>(async (res, rej) => {
+          channel.port1.onmessage = (
+            event: MessageEvent<MessageType<void>>
+          ) => {
+            const { data } = event;
+            channel.port1.close();
+            if (!data.success) {
+              return rej(data.error);
             }
-          },
-          {
-            once: true,
-          }
-        );
-      });
+            isIframeLoaded = true;
+            return res(true);
+          };
 
-      const result = await promise;
-      if (result) {
-        this.isLoaded = true;
-      }
+          // iFrame takes a bit of time after loading to be ready for message receiving
+          // This is hacky
+          await sleep(this.POST_LOAD_BUFFER_SECONDS);
+          const INIT_IFRAME_EVENT = "initIframe";
+          iframe?.contentWindow?.postMessage(
+            // ? We can probably initialise the iframe with a bunch
+            // of useful information so that we don't have to pass it
+            // through in each of the future call. This would be where we do it.
+            { eventType: INIT_IFRAME_EVENT, data: {} },
+            "*",
+            [channel.port2]
+          );
+        });
+        await promise;
+      };
     }
+    this.iframe = iframe;
   }
 
   async call<ReturnData>(procedureName: keyof T, params: T[keyof T]) {
-    const promise = new Promise<ReturnData>((res, rej) => {
+    const promise = new Promise<ReturnData>(async (res, rej) => {
+      while (!isIframeLoaded) {
+        await sleep(this.POLLING_INTERVAL_SECONDS);
+      }
       const channel = new MessageChannel();
       channel.port1.onmessage = (
         event: MessageEvent<MessageType<ReturnData>>
@@ -94,6 +79,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         }
         return res(data.data);
       };
+
       this.iframe.contentWindow?.postMessage(
         { eventType: procedureName, data: params },
         "*",
@@ -105,7 +91,11 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
 }
 
 // This is the URL and ID tag of the iFrame that we communicate with
-export function createEmbeddedWalletLink({ clientId }: { clientId: string }) {
+export function createEmbeddedWalletIframeLink({
+  clientId,
+}: {
+  clientId: string;
+}) {
   return new URL(`/embedded-wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
 }
 export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";
