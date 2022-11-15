@@ -1,6 +1,7 @@
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
-import { Signer } from "ethers";
-import { Bytes, Deferrable, defineReadOnly } from "ethers/lib/utils";
+import { Signer } from "@ethersproject/abstract-signer";
+import { Bytes } from "@ethersproject/bytes";
+import { Deferrable, defineReadOnly } from "@ethersproject/properties";
 import {
   createEmbeddedWalletLink,
   EMBEDDED_WALLET_IFRAME_ID,
