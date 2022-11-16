@@ -1,4 +1,3 @@
-import { PAPER_APP_URL_ALT } from "../../constants/settings";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
 
 export type IFrameCommunicatorProps = { link: string; iframeId: string };
