@@ -24,3 +24,10 @@ export const ChainToPublicRpc: Record<Chains, string> = {
   Mumbai: "https://rpc-mumbai.maticvigil.com",
   Polygon: "https://rpc-mainnet.maticvigil.com",
 };
+
+export enum AuthProvider {
+  EMAIL = "Email",
+  GOOGLE = "Google",
+  AUTH0 = "Auth0",
+  CUSTOM_JWT = "CustomJWT",
+}

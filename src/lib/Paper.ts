@@ -10,7 +10,7 @@ export class PaperClient {
 
   constructor({ clientId, chain }: PaperConstructorType) {
     this.clientId = clientId;
-    this.Login = new Login();
+    this.Login = new Login({ clientId });
     this.User = new EmbeddedWallet({ clientId, chain });
   }
 }
