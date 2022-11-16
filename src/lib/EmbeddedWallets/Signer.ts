@@ -10,12 +10,12 @@ import type {
   GetAddressReturnType,
   SignMessageReturnType,
   SignTransactionReturnType,
-} from "../interfaces/Signer";
+} from "../../interfaces/Signer";
 import {
   createEmbeddedWalletIframeLink,
   EMBEDDED_WALLET_IFRAME_ID,
   IframeCommunicator,
-} from "../utils/IframeCommunicator";
+} from "../../utils/IframeCommunicator";
 
 export type SignerProcedureTypes = {
   getAddress: void;
@@ -30,6 +30,7 @@ export type SignerProcedureTypes = {
 export class EthersSigner extends Signer {
   protected querier: IframeCommunicator<SignerProcedureTypes>;
   protected clientId: string;
+  private DEFAULT_ETHEREUM_CHAIN_ID = 1;
   constructor({
     provider,
     clientId,
@@ -43,7 +44,7 @@ export class EthersSigner extends Signer {
       iframeId: EMBEDDED_WALLET_IFRAME_ID,
       link: createEmbeddedWalletIframeLink({ clientId }).href,
     });
-    defineReadOnly(this, "provider", provider || null);
+    defineReadOnly(this, "provider", provider);
   }
 
   override async getAddress(): Promise<string> {
@@ -58,7 +59,9 @@ export class EthersSigner extends Signer {
       "signMessage",
       {
         message,
-        chainId: (await this.provider?.getNetwork())?.chainId,
+        chainId:
+          (await this.provider?.getNetwork())?.chainId ??
+          this.DEFAULT_ETHEREUM_CHAIN_ID,
       }
     );
     return signedMessage;
@@ -70,7 +73,9 @@ export class EthersSigner extends Signer {
     const { signedTransaction } =
       await this.querier.call<SignTransactionReturnType>("signTransaction", {
         transaction,
-        chainId: (await this.provider?.getNetwork())?.chainId,
+        chainId:
+          (await this.provider?.getNetwork())?.chainId ??
+          this.DEFAULT_ETHEREUM_CHAIN_ID,
       });
     return signedTransaction;
   }

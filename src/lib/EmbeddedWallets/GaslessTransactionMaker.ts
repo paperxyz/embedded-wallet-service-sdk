@@ -13,7 +13,7 @@ import {
 } from "../../utils/IframeCommunicator";
 
 export type GaslessTransactionQuerierTypes = {
-  callContract: ContractCallInputType;
+  callContract: ContractCallInputType & { chain: Chains };
 };
 
 /**
@@ -38,10 +38,10 @@ export class GaslessTransactionMaker {
     contractAddress,
     method,
   }: ContractCallInputType): Promise<ContractCallReturnType> {
-    console.log("contractAddress, method", contractAddress, method);
     return await this.gaslessTransactionQuerier.call<ContractCallReturnType>(
       "callContract",
       {
+        chain: this.chain,
         contractAddress,
         method,
       }

@@ -1,8 +1,8 @@
 import {
   Chains,
   PaperConstructorType,
-  WalletDetailsType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { WalletHoldingInputType } from "../../interfaces/EmbeddedWallets/WalletHoldings";
 import {
   createEmbeddedWalletIframeLink,
   EMBEDDED_WALLET_IFRAME_ID,
@@ -10,14 +10,14 @@ import {
 } from "../../utils/IframeCommunicator";
 
 export type WalletHoldingQueryTypes = {
-  listNfts: WalletDetailsType;
-  listTokens: WalletDetailsType;
+  listNfts: WalletHoldingInputType;
+  listTokens: WalletHoldingInputType;
 };
 
 /**
  * @description WalletHoldings responsible for all the read related methods that the developers might want to do with EmbeddedWallet
  */
-export class EmbeddedWalletHoldings {
+export class WalletHoldings {
   protected clientId: string;
   protected chain: Chains;
   protected walletHoldingQuerier: IframeCommunicator<WalletHoldingQueryTypes>;
@@ -30,10 +30,10 @@ export class EmbeddedWalletHoldings {
       link: createEmbeddedWalletIframeLink({ clientId }).href,
     });
   }
-  async listNfts({ chain, limit, offset }: WalletDetailsType) {
+  async listNfts({ chain, limit, offset }: WalletHoldingInputType) {
     console.log("chain, limit, offset", chain, limit, offset);
   }
-  async listTokens({ chain, limit, offset }: WalletDetailsType) {
+  async listTokens({ chain, limit, offset }: WalletHoldingInputType) {
     console.log("chain, limit, offset", chain, limit, offset);
   }
 }

@@ -1,7 +1,7 @@
 export type ContractCallInputType = {
   contractAddress: string;
   method: {
-    stub: `function ${string}(${string})`;
+    stub: `function ${string}(${string})${string}`;
     args: Array<unknown>;
     // Future versions will allow additional value.
     // The user will be prompted to pay with a fiat checkout flow
@@ -13,4 +13,4 @@ export type ContractCallInputType = {
   };
 };
 
-export type ContractCallReturnType = {transactionHash: string}
+export type ContractCallReturnType = { transactionHash: string };
