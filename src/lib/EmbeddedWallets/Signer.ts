@@ -10,12 +10,8 @@ import type {
   GetAddressReturnType,
   SignMessageReturnType,
   SignTransactionReturnType,
-} from "../../interfaces/Signer";
-import {
-  createEmbeddedWalletIframeLink,
-  EMBEDDED_WALLET_IFRAME_ID,
-  IframeCommunicator,
-} from "../../utils/IframeCommunicator";
+} from "../../interfaces/EmbeddedWallets/Signer";
+import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type SignerProcedureTypes = {
   getAddress: void;
@@ -28,7 +24,7 @@ export type SignerProcedureTypes = {
 };
 
 export class EthersSigner extends Signer {
-  protected querier: IframeCommunicator<SignerProcedureTypes>;
+  protected querier: EmbeddedWalletIframeCommunicator<SignerProcedureTypes>;
   protected clientId: string;
   private DEFAULT_ETHEREUM_CHAIN_ID = 1;
   constructor({
@@ -40,10 +36,7 @@ export class EthersSigner extends Signer {
   }) {
     super();
     this.clientId = clientId;
-    this.querier = new IframeCommunicator({
-      iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId }).href,
-    });
+    this.querier = new EmbeddedWalletIframeCommunicator({ clientId });
     defineReadOnly(this, "provider", provider);
   }
 

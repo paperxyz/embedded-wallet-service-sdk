@@ -5,11 +5,7 @@ import type {
   Chains,
   PaperConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import {
-  createEmbeddedWalletIframeLink,
-  EMBEDDED_WALLET_IFRAME_ID,
-  IframeCommunicator,
-} from "../../utils/IframeCommunicator";
+import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 import { WalletHoldings } from "./WalletHoldings";
@@ -21,7 +17,7 @@ export type WalletManagementTypes = {
 export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
-  protected walletManagerQuerier: IframeCommunicator<WalletManagementTypes>;
+  protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
 
   public walletHoldings: WalletHoldings;
   public writeTo: GaslessTransactionMaker;
@@ -31,9 +27,8 @@ export class EmbeddedWallet {
     this.clientId = clientId;
     this.chain = chain;
 
-    this.walletManagerQuerier = new IframeCommunicator({
-      iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId }).href,
+    this.walletManagerQuerier = new EmbeddedWalletIframeCommunicator({
+      clientId,
     });
 
     this.walletHoldings = new WalletHoldings({

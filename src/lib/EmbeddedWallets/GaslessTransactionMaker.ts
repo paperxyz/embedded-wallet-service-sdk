@@ -6,11 +6,7 @@ import type {
   ContractCallInputType,
   ContractCallReturnType,
 } from "../../interfaces/EmbeddedWallets/GaslessTransactionMaker";
-import {
-  createEmbeddedWalletIframeLink,
-  EMBEDDED_WALLET_IFRAME_ID,
-  IframeCommunicator,
-} from "../../utils/IframeCommunicator";
+import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type GaslessTransactionQuerierTypes = {
   callContract: ContractCallInputType & { chain: Chains };
@@ -22,13 +18,12 @@ export type GaslessTransactionQuerierTypes = {
 export class GaslessTransactionMaker {
   protected chain: Chains;
   protected clientId: string;
-  protected gaslessTransactionQuerier: IframeCommunicator<GaslessTransactionQuerierTypes>;
+  protected gaslessTransactionQuerier: EmbeddedWalletIframeCommunicator<GaslessTransactionQuerierTypes>;
   constructor({ chain, clientId }: PaperConstructorType) {
     this.chain = chain;
     this.clientId = clientId;
-    this.gaslessTransactionQuerier = new IframeCommunicator({
-      iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId }).href,
+    this.gaslessTransactionQuerier = new EmbeddedWalletIframeCommunicator({
+      clientId,
     });
   }
   /**

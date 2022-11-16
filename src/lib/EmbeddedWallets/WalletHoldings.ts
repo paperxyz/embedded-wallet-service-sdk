@@ -3,11 +3,7 @@ import {
   PaperConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { WalletHoldingInputType } from "../../interfaces/EmbeddedWallets/WalletHoldings";
-import {
-  createEmbeddedWalletIframeLink,
-  EMBEDDED_WALLET_IFRAME_ID,
-  IframeCommunicator,
-} from "../../utils/IframeCommunicator";
+import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type WalletHoldingQueryTypes = {
   listNfts: WalletHoldingInputType;
@@ -20,14 +16,13 @@ export type WalletHoldingQueryTypes = {
 export class WalletHoldings {
   protected clientId: string;
   protected chain: Chains;
-  protected walletHoldingQuerier: IframeCommunicator<WalletHoldingQueryTypes>;
+  protected walletHoldingQuerier: EmbeddedWalletIframeCommunicator<WalletHoldingQueryTypes>;
 
   constructor({ chain, clientId }: PaperConstructorType) {
     this.clientId = clientId;
     this.chain = chain;
-    this.walletHoldingQuerier = new IframeCommunicator({
-      iframeId: EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId }).href,
+    this.walletHoldingQuerier = new EmbeddedWalletIframeCommunicator({
+      clientId,
     });
   }
   async listNfts({ chain, limit, offset }: WalletHoldingInputType) {

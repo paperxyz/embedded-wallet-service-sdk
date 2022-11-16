@@ -25,9 +25,3 @@ export const ChainToPublicRpc: Record<Chains, string> = {
   Polygon: "https://rpc-mainnet.maticvigil.com",
 };
 
-export enum AuthProvider {
-  EMAIL = "Email",
-  GOOGLE = "Google",
-  AUTH0 = "Auth0",
-  CUSTOM_JWT = "CustomJWT",
-}
