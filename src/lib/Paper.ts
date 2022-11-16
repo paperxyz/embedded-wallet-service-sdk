@@ -9,7 +9,7 @@ export class PaperClient {
 
   constructor({ clientId }: { clientId: string }) {
     this.clientId = clientId;
-    this.Login = new Login();
+    this.Login = new Login({ clientId });
     this.User = new EmbeddedWallet({ clientId });
   }
 }

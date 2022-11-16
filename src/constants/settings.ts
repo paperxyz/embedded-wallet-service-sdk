@@ -28,3 +28,10 @@ export const DEFAULT_BRAND_OPTIONS = {
   borderRadius: 12,
   fontFamily: "Open Sans",
 };
+
+export enum AuthProvider {
+  EMAIL = "Email",
+  GOOGLE = "Google",
+  AUTH0 = "Auth0",
+  CUSTOM_JWT = "CustomJWT",
+}
