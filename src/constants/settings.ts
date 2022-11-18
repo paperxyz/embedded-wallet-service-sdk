@@ -18,10 +18,11 @@ export const PAPER_APP_URL_ALT =
     ? window.location.origin
     : "https://papercheckout.com";
 
+export const EMBEDDED_WALLET_PATH = "/sdk/2022-08-12/embedded-wallets";
+
 export const ChainToPublicRpc: Record<Chains, string> = {
   Ethereum: "https://rpc.ankr.com/eth",
   Goerli: "https://eth-goerli.g.alchemy.com/v2/demo",
   Mumbai: "https://rpc-mumbai.maticvigil.com",
   Polygon: "https://rpc-mainnet.maticvigil.com",
 };
-
