@@ -1,4 +1,7 @@
-import { PAPER_APP_URL_ALT } from "../../constants/settings";
+import {
+  EMBEDDED_WALLET_PATH,
+  PAPER_APP_URL_ALT,
+} from "../../constants/settings";
 import { IframeCommunicator } from "./IframeCommunicator";
 
 export class EmbeddedWalletIframeCommunicator<
@@ -18,6 +21,8 @@ export function createEmbeddedWalletIframeLink({
 }: {
   clientId: string;
 }) {
-  return new URL(`/embedded-wallet?clientId=${clientId}`, PAPER_APP_URL_ALT);
+  const embeddedWalletUrl = new URL(EMBEDDED_WALLET_PATH, PAPER_APP_URL_ALT);
+  embeddedWalletUrl.searchParams.set("clientId", clientId);
+  return embeddedWalletUrl;
 }
 export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";

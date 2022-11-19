@@ -2,7 +2,10 @@ import {
   Chains,
   PaperConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { WalletHoldingInputType } from "../../interfaces/EmbeddedWallets/WalletHoldings";
+import {
+  WalletHoldingInputType,
+  WalletHoldingNftsReturnType,
+} from "../../interfaces/EmbeddedWallets/WalletHoldings";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type WalletHoldingQueryTypes = {
@@ -25,10 +28,27 @@ export class WalletHoldings {
       clientId,
     });
   }
+  // TODO: limit and offset are not currently being respected because they are not supported by simple-hash
   async listNfts({ chain, limit, offset }: WalletHoldingInputType) {
-    console.log("chain, limit, offset", chain, limit, offset);
+    return this.walletHoldingQuerier.call<WalletHoldingNftsReturnType>(
+      "listNfts",
+      {
+        chain,
+        limit,
+        offset,
+      }
+    );
   }
-  async listTokens({ chain, limit, offset }: WalletHoldingInputType) {
-    console.log("chain, limit, offset", chain, limit, offset);
-  }
+  // TODO: Support listing tokens
+  // ? What tokens do we want to support?
+  // async listTokens({ chain, limit, offset }: WalletHoldingInputType) {
+  //   return this.walletHoldingQuerier.call<WalletHoldingTokensReturnType>(
+  //     "listTokens",
+  //     {
+  //       chain,
+  //       limit,
+  //       offset,
+  //     }
+  //   );
+  // }
 }
