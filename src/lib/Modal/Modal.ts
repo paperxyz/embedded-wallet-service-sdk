@@ -1,13 +1,13 @@
 import { defaultModalStyles, modalKeyframeAnimations } from "./styles";
 import { ModalStyles, StyleObject } from "../../interfaces/Modal";
 export class Modal {
-  container: HTMLElement;
-  styles = defaultModalStyles;
-  main: HTMLDivElement;
-  overlay: HTMLDivElement;
+  protected container: HTMLElement;
+  protected styles = defaultModalStyles;
+  protected main: HTMLDivElement;
+  protected overlay: HTMLDivElement;
+  protected iframe: HTMLIFrameElement;
+  protected style: HTMLStyleElement;
   body: HTMLDivElement;
-  iframe: HTMLIFrameElement;
-  style: HTMLStyleElement;
 
   constructor(container?: HTMLElement, styles?: Partial<ModalStyles>) {
     this.container = container || document.body;
@@ -58,7 +58,7 @@ export class Modal {
     window.removeEventListener("keydown", this.onKeyDown);
   }
 
-  addListeners() {
+  protected addListeners() {
     this.overlay.addEventListener("click", () => {
       this.close();
     });
@@ -66,13 +66,13 @@ export class Modal {
     window.addEventListener("keydown", this.onKeyDown);
   }
 
-  onKeyDown = (e: KeyboardEvent) => {
+  protected onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
       this.close();
     }
   };
 
-  mergeStyles(styles: Partial<ModalStyles>) {
+  protected mergeStyles(styles: Partial<ModalStyles>) {
     this.styles.body = {
       ...this.styles.body,
       ...(styles.body || {}),
@@ -94,14 +94,14 @@ export class Modal {
     };
   }
 
-  addAccessibility() {
+  protected addAccessibility() {
     this.main.setAttribute("aria-hidden", "true");
     this.overlay.setAttribute("aria-hidden", "true");
     this.body.setAttribute("aria-modal", "true");
     this.body.setAttribute("role", "dialog");
   }
 
-  assignStyles(el: HTMLElement, styles: StyleObject) {
+  protected assignStyles(el: HTMLElement, styles: StyleObject) {
     Object.keys(styles).forEach((style) => {
       // @ts-ignore
       el.style[style] = styles[style];
