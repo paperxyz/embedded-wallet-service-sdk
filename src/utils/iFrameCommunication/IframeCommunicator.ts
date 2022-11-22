@@ -1,6 +1,10 @@
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
 
-export type IFrameCommunicatorProps = { link: string; iframeId: string };
+export type IFrameCommunicatorProps = {
+  link: string;
+  iframeId: string;
+  container?: HTMLElement;
+};
 
 function sleep(seconds: number) {
   return new Promise((resolve) => {
@@ -15,19 +19,19 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
   private iframe: HTMLIFrameElement;
   private POLLING_INTERVAL_SECONDS = 1.4;
   private POST_LOAD_BUFFER_SECONDS = 1;
-  constructor({ link, iframeId }: IFrameCommunicatorProps) {
+  constructor({ link, iframeId, container }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
 
-    if (!iframe || iframe.src != link) {
-      if (!iframe) {
+    if (!iframe || iframe.src != link || container) {
+      if (!iframe || container) {
         iframe = document.createElement("iframe");
         iframe.setAttribute(
           "style",
           "width: 0px; height: 0px; visibility: hidden;"
         );
-        iframe.setAttribute("id", iframeId);
-        document.body.appendChild(iframe);
+        iframe.setAttribute("id", container ? iframeId + "-modal" : iframeId);
+        (container || document.body).appendChild(iframe);
       }
       iframe.src = link;
       iframe.onload = IframeCommunicator.onIframeLoadHandler(
@@ -98,4 +102,3 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     return promise;
   }
 }
-

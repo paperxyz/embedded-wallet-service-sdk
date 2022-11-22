@@ -7,10 +7,17 @@ import { IframeCommunicator } from "./IframeCommunicator";
 export class EmbeddedWalletIframeCommunicator<
   T extends { [key: string]: any }
 > extends IframeCommunicator<T> {
-  constructor({ clientId }: { clientId: string }) {
+  constructor({
+    clientId,
+    container,
+  }: {
+    clientId: string;
+    container?: HTMLElement;
+  }) {
     super({
       iframeId: EMBEDDED_WALLET_IFRAME_ID,
       link: createEmbeddedWalletIframeLink({ clientId }).href,
+      container,
     });
   }
 }
