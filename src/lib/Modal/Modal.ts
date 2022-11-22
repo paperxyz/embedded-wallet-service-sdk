@@ -1,7 +1,7 @@
 import { defaultModalStyles, modalKeyframeAnimations } from "./styles";
 import { ModalStyles, StyleObject } from "../../interfaces/Modal";
 export class Modal {
-  container = "body";
+  container: HTMLElement;
   styles = defaultModalStyles;
   main: HTMLDivElement;
   overlay: HTMLDivElement;
@@ -9,10 +9,8 @@ export class Modal {
   iframe: HTMLIFrameElement;
   style: HTMLStyleElement;
 
-  constructor(container?: string, styles?: Partial<ModalStyles>) {
-    if (container) {
-      this.container = container;
-    }
+  constructor(container?: HTMLElement, styles?: Partial<ModalStyles>) {
+    this.container = container || document.body;
 
     if (styles) {
       this.mergeStyles(styles);
@@ -30,8 +28,6 @@ export class Modal {
     this.assignStyles(this.overlay, this.styles.overlay);
     this.assignStyles(this.body, this.styles.body);
     this.assignStyles(this.iframe, this.styles.iframe);
-
-    this.addListeners();
   }
 
   open(iframeUrl?: string) {
@@ -40,11 +36,14 @@ export class Modal {
       this.body.appendChild(this.iframe);
     }
 
+    this.addAccessibility();
+    this.addListeners();
+
     this.main.appendChild(this.overlay);
     this.main.appendChild(this.style);
     this.main.appendChild(this.body);
 
-    document.querySelector(this.container)?.appendChild(this.main);
+    this.container.appendChild(this.main);
     document.body.style.overflow = "hidden";
   }
 
@@ -55,13 +54,23 @@ export class Modal {
       document.body.style.overflow = "visible";
       this.main.remove();
     });
+
+    window.removeEventListener("keydown", this.onKeyDown);
   }
 
   addListeners() {
     this.overlay.addEventListener("click", () => {
       this.close();
     });
+
+    window.addEventListener("keydown", this.onKeyDown);
   }
+
+  onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      this.close();
+    }
+  };
 
   mergeStyles(styles: Partial<ModalStyles>) {
     this.styles.body = {
@@ -83,6 +92,13 @@ export class Modal {
       ...this.styles.iframe,
       ...(styles.iframe || {}),
     };
+  }
+
+  addAccessibility() {
+    this.main.setAttribute("aria-hidden", "true");
+    this.overlay.setAttribute("aria-hidden", "true");
+    this.body.setAttribute("aria-modal", "true");
+    this.body.setAttribute("role", "dialog");
   }
 
   assignStyles(el: HTMLElement, styles: StyleObject) {

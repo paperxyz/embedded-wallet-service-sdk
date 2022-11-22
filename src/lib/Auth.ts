@@ -41,10 +41,10 @@ export class Auth {
     modalStyles,
   }: {
     email: string;
-    modalContainer?: string;
+    modalContainer?: HTMLElement;
     modalStyles?: Partial<ModalStyles>;
   }): Promise<any> {
-    const modal = new Modal(modalContainer || "body", modalStyles);
+    const modal = new Modal(modalContainer, modalStyles);
 
     const querier = new EmbeddedWalletIframeCommunicator({
       clientId: this.clientId,
