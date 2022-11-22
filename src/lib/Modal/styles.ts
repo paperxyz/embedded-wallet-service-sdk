@@ -16,7 +16,7 @@ export const defaultModalStyles: ModalStyles = {
     alignItems: "center",
     justifyContent: "center",
   },
-  outer: {
+  overlay: {
     ...fullScreen,
     position: "absolute",
     backgroundColor: "rgba(0, 0, 0, 0.5)",

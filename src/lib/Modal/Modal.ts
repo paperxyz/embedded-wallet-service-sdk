@@ -4,7 +4,7 @@ export class Modal {
   container = "body";
   styles = defaultModalStyles;
   main: HTMLDivElement;
-  outer: HTMLDivElement;
+  overlay: HTMLDivElement;
   body: HTMLDivElement;
   iframe: HTMLIFrameElement;
   style: HTMLStyleElement;
@@ -19,7 +19,7 @@ export class Modal {
     }
 
     this.main = document.createElement("div");
-    this.outer = document.createElement("div");
+    this.overlay = document.createElement("div");
     this.body = document.createElement("div");
     this.iframe = document.createElement("iframe");
 
@@ -27,7 +27,7 @@ export class Modal {
     this.style.innerHTML = modalKeyframeAnimations;
 
     this.assignStyles(this.main, this.styles.main);
-    this.assignStyles(this.outer, this.styles.outer);
+    this.assignStyles(this.overlay, this.styles.overlay);
     this.assignStyles(this.body, this.styles.body);
     this.assignStyles(this.iframe, this.styles.iframe);
 
@@ -40,7 +40,7 @@ export class Modal {
       this.body.appendChild(this.iframe);
     }
 
-    this.main.appendChild(this.outer);
+    this.main.appendChild(this.overlay);
     this.main.appendChild(this.style);
     this.main.appendChild(this.body);
 
@@ -58,7 +58,7 @@ export class Modal {
   }
 
   addListeners() {
-    this.outer.addEventListener("click", () => {
+    this.overlay.addEventListener("click", () => {
       this.close();
     });
   }
@@ -69,9 +69,9 @@ export class Modal {
       ...(styles.body || {}),
     };
 
-    this.styles.outer = {
-      ...this.styles.outer,
-      ...(styles.outer || {}),
+    this.styles.overlay = {
+      ...this.styles.overlay,
+      ...(styles.overlay || {}),
     };
 
     this.styles.main = {
