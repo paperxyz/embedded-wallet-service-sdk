@@ -1,6 +1,9 @@
 import { AuthProvider, JwtAuthReturnType } from "../interfaces/Auth";
 import { ModalStyles } from "../interfaces/Modal";
-import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import {
+  EmbeddedWalletIframeCommunicator,
+  EMBEDDED_WALLET_MODAL_IFRAME_ID,
+} from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { Modal } from "./Modal/Modal";
 
 export type AuthTypes = {
@@ -49,6 +52,7 @@ export class Auth {
     const querier = new EmbeddedWalletIframeCommunicator({
       clientId: this.clientId,
       container: modal.body,
+      iframeId: EMBEDDED_WALLET_MODAL_IFRAME_ID,
     });
 
     console.log(querier, email);

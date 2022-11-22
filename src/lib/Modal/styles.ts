@@ -29,6 +29,8 @@ export const defaultModalStyles: ModalStyles = {
     maxWidth: "600px",
     width: "100%",
     animation: "pew-modal-slideIn 0.2s forwards",
+    maxHeight: "80vh",
+    overflow: "auto",
   },
   iframe: {
     height: "100%",

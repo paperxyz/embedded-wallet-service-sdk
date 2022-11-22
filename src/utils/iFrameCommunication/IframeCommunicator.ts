@@ -23,14 +23,14 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
 
-    if (!iframe || iframe.src != link || container) {
-      if (!iframe || container) {
+    if (!iframe || iframe.src != link) {
+      if (!iframe) {
         iframe = document.createElement("iframe");
         iframe.setAttribute(
           "style",
           "width: 0px; height: 0px; visibility: hidden;"
         );
-        iframe.setAttribute("id", container ? iframeId + "-modal" : iframeId);
+        iframe.setAttribute("id", iframeId);
         (container || document.body).appendChild(iframe);
       }
       iframe.src = link;

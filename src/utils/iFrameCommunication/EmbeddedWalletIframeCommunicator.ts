@@ -10,12 +10,14 @@ export class EmbeddedWalletIframeCommunicator<
   constructor({
     clientId,
     container,
+    iframeId,
   }: {
     clientId: string;
     container?: HTMLElement;
+    iframeId?: string;
   }) {
     super({
-      iframeId: EMBEDDED_WALLET_IFRAME_ID,
+      iframeId: iframeId || EMBEDDED_WALLET_IFRAME_ID,
       link: createEmbeddedWalletIframeLink({ clientId }).href,
       container,
     });
@@ -33,3 +35,5 @@ export function createEmbeddedWalletIframeLink({
   return embeddedWalletUrl;
 }
 export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";
+export const EMBEDDED_WALLET_MODAL_IFRAME_ID =
+  "paper-embedded-wallet-modal-iframe";
