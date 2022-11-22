@@ -21,7 +21,7 @@ export class EmbeddedWallet {
 
   public walletHoldings: WalletHoldings;
   public writeTo: GaslessTransactionMaker;
-  public details: { walletAddress: Promise<string> };
+  public details: { getWalletAddress: () => Promise<string> };
 
   constructor({ clientId, chain }: PaperConstructorType) {
     this.clientId = clientId;
@@ -36,7 +36,11 @@ export class EmbeddedWallet {
       clientId,
     });
     this.writeTo = new GaslessTransactionMaker({ chain, clientId });
-    this.details = { walletAddress: this.getSigner().getAddress() };
+    this.details = {
+      getWalletAddress: () => {
+        return this.getSigner().getAddress();
+      },
+    };
   }
 
   async createWallet({
