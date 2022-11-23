@@ -2,15 +2,16 @@ import { EMBEDDED_WALLET_EMAIL_OTP_PATH } from "../constants/settings";
 import { AuthProvider, JwtAuthReturnType } from "../interfaces/Auth";
 import { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
-import { EmbeddedWalletUiIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
-import { Modal } from "./Modal/Modal";
+import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   jwtAuth: {
     token: string;
     provider: AuthProvider;
   };
-  emailAuth: {};
+};
+type AuthUiType = {
+  emailOTP: { email: string };
 };
 
 export class Auth {
@@ -43,18 +44,14 @@ export class Auth {
     modalStyles,
   }: {
     email: string;
-  } & ModalInterface): Promise<any> {
-    const modal = new Modal(modalContainer, modalStyles);
-
-    const querier = new EmbeddedWalletUiIframeCommunicator({
+  } & ModalInterface): Promise<JwtAuthReturnType> {
+    return openModalForFunction<AuthUiType, JwtAuthReturnType>({
       clientId: this.clientId,
-      container: modal.body,
+      params: { email },
       path: EMBEDDED_WALLET_EMAIL_OTP_PATH,
-      
+      procedure: "emailOTP",
+      modalContainer,
+      modalStyles,
     });
-
-    console.log(querier, email);
-
-    modal.open();
   }
 }
