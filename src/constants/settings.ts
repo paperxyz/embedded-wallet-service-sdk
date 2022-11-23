@@ -19,8 +19,8 @@ export const PAPER_APP_URL_ALT =
     : "https://papercheckout.com";
 
 export const EMBEDDED_WALLET_PATH = "/sdk/2022-08-12/embedded-wallet";
-export const EMBEDDED_WALLET_EMAIL_OTP_PATH =
-  "/sdk/2022-08-12/embedded-wallet/login-with-email-otp";
+export const EMBEDDED_WALLET_OTP_PATH =
+  "/sdk/2022-08-12/embedded-wallet/login-with-otp";
 export const EMBEDDED_WALLET_CREATE_WALLET_UI_PATH =
   "/sdk/2022-08-12/embedded-wallet/create-new-wallet-ui";
 

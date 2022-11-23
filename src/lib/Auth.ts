@@ -1,4 +1,4 @@
-import { EMBEDDED_WALLET_EMAIL_OTP_PATH } from "../constants/settings";
+import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import { AuthProvider, JwtAuthReturnType } from "../interfaces/Auth";
 import { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
@@ -48,7 +48,7 @@ export class Auth {
     return openModalForFunction<AuthUiType, JwtAuthReturnType>({
       clientId: this.clientId,
       params: { email },
-      path: EMBEDDED_WALLET_EMAIL_OTP_PATH,
+      path: EMBEDDED_WALLET_OTP_PATH,
       procedure: "emailOTP",
       modalContainer,
       modalStyles,
