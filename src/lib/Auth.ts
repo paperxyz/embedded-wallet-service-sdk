@@ -47,9 +47,9 @@ export class Auth {
   } & ModalInterface): Promise<JwtAuthReturnType> {
     return openModalForFunction<AuthUiType, JwtAuthReturnType>({
       clientId: this.clientId,
-      params: { email },
       path: EMBEDDED_WALLET_OTP_PATH,
       procedure: "emailOTP",
+      params: { email },
       modalContainer,
       modalStyles,
     });
