@@ -3,6 +3,7 @@ import { getDefaultProvider } from "@ethersproject/providers";
 import {
   ChainToPublicRpc,
   EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
+  EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
 } from "../../constants/settings";
 import type {
   Chains,
@@ -10,6 +11,7 @@ import type {
   HasWalletReturnType,
   IsNewDeviceReturnType,
   PaperConstructorType,
+  SetUpNewDeviceReturnType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { ModalInterface } from "../../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
@@ -20,6 +22,7 @@ import { WalletHoldings } from "./WalletHoldings";
 
 export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
+  setUpNewDevice: { recoveryPassword: string };
   hasWallet: void;
   isNewDevice: void;
 };
@@ -104,28 +107,36 @@ export class EmbeddedWallet {
         params: undefined,
       });
     }
-    const { walletAddress } =
-      await this.walletManagerQuerier.call<CreateWalletReturnType>(
-        "createWallet",
-        {
-          recoveryPassword: props.recoveryPassword,
-        }
-      );
-    return { walletAddress };
+    return this.walletManagerQuerier.call<CreateWalletReturnType>(
+      "createWallet",
+      {
+        recoveryPassword: props.recoveryPassword,
+      }
+    );
   }
 
-  private async setUpNewDevice(props: EmbeddedWalletInternalHelperType) {
+  private async setUpNewDevice(
+    props: EmbeddedWalletInternalHelperType
+  ): Promise<SetUpNewDeviceReturnType> {
     if (props.showUi) {
-      return;
+      return openModalForFunction<
+        WalletManagementUiTypes,
+        SetUpNewDeviceReturnType
+      >({
+        modalContainer: props.modalContainer,
+        modalStyles: props.modalStyles,
+        clientId: this.clientId,
+        path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
+        procedure: "setUpNewDevice",
+        params: undefined,
+      });
     }
-    const { walletAddress } =
-      await this.walletManagerQuerier.call<CreateWalletReturnType>(
-        "createWallet",
-        {
-          recoveryPassword: props.recoveryPassword,
-        }
-      );
-    return { walletAddress };
+    return this.walletManagerQuerier.call<SetUpNewDeviceReturnType>(
+      "setUpNewDevice",
+      {
+        recoveryPassword: props.recoveryPassword,
+      }
+    );
   }
 
   /**

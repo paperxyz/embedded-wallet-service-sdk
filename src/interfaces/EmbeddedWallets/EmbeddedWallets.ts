@@ -5,5 +5,6 @@ export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
 export type PaperConstructorType = { clientId: string; chain: Chains };
 
 export type CreateWalletReturnType = { walletAddress: string };
+export type SetUpNewDeviceReturnType = { walletAddress: string };
 export type HasWalletReturnType = { hasWallet: boolean };
 export type IsNewDeviceReturnType = { isNewDevice: boolean };
