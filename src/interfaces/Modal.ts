@@ -6,3 +6,8 @@ export interface ModalStyles {
   body: StyleObject;
   iframe: StyleObject;
 }
+
+export interface ModalInterface {
+  modalContainer?: HTMLElement;
+  modalStyles?: Partial<ModalStyles>;
+}

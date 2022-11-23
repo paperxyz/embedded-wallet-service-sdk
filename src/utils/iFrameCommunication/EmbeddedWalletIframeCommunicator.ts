@@ -7,19 +7,14 @@ import { IframeCommunicator } from "./IframeCommunicator";
 export class EmbeddedWalletIframeCommunicator<
   T extends { [key: string]: any }
 > extends IframeCommunicator<T> {
-  constructor({
-    clientId,
-    container,
-    iframeId,
-  }: {
-    clientId: string;
-    container?: HTMLElement;
-    iframeId?: string;
-  }) {
+  constructor({ clientId }: { clientId: string }) {
     super({
-      iframeId: iframeId || EMBEDDED_WALLET_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId }).href,
-      container,
+      iframeId: EMBEDDED_WALLET_IFRAME_ID,
+      link: createEmbeddedWalletIframeLink({
+        clientId,
+        path: EMBEDDED_WALLET_PATH,
+      }).href,
+      container: document.body,
     });
   }
 }
@@ -27,13 +22,13 @@ export class EmbeddedWalletIframeCommunicator<
 // This is the URL and ID tag of the iFrame that we communicate with
 export function createEmbeddedWalletIframeLink({
   clientId,
+  path,
 }: {
   clientId: string;
+  path: string;
 }) {
-  const embeddedWalletUrl = new URL(EMBEDDED_WALLET_PATH, PAPER_APP_URL_ALT);
+  const embeddedWalletUrl = new URL(path, PAPER_APP_URL_ALT);
   embeddedWalletUrl.searchParams.set("clientId", clientId);
   return embeddedWalletUrl;
 }
 export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";
-export const EMBEDDED_WALLET_MODAL_IFRAME_ID =
-  "paper-embedded-wallet-modal-iframe";

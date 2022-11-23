@@ -1,13 +1,21 @@
+import {
+  ModalInterface,
+  ModalStyles,
+  StyleObject,
+} from "../../interfaces/Modal";
+import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
+import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
 import { defaultModalStyles, modalKeyframeAnimations } from "./styles";
-import { ModalStyles, StyleObject } from "../../interfaces/Modal";
 export class Modal {
   protected container: HTMLElement;
   protected styles = defaultModalStyles;
   protected main: HTMLDivElement;
   protected overlay: HTMLDivElement;
   protected iframe: HTMLIFrameElement;
+
   protected style: HTMLStyleElement;
   body: HTMLDivElement;
+  protected iframeCommunicator: IframeCommunicator<{}> | undefined;
 
   constructor(container?: HTMLElement, styles?: Partial<ModalStyles>) {
     this.container = container || document.body;
@@ -30,11 +38,15 @@ export class Modal {
     this.assignStyles(this.iframe, this.styles.iframe);
   }
 
-  open(iframeUrl?: string) {
+  open({
+    iframeUrl,
+    communicator,
+  }: { iframeUrl?: string; communicator?: IframeCommunicator<{}> } = {}) {
     if (iframeUrl) {
       this.iframe.src = iframeUrl;
       this.body.appendChild(this.iframe);
     }
+    this.iframeCommunicator = communicator;
 
     this.addAccessibility();
     this.addListeners();
@@ -48,6 +60,10 @@ export class Modal {
   }
 
   close() {
+    if (this.iframeCommunicator) {
+      this.iframeCommunicator.destroy();
+    }
+
     this.body.style.animation = "pew-modal-slideOut 0.2s forwards";
 
     this.body.addEventListener("animationend", () => {
@@ -102,9 +118,47 @@ export class Modal {
   }
 
   protected assignStyles(el: HTMLElement, styles: StyleObject) {
-    Object.keys(styles).forEach((style) => {
-      // @ts-ignore
-      el.style[style] = styles[style];
+    Object.assign(el.style, styles);
+  }
+}
+
+export async function openModalForFunction<
+  ProcedureTypes extends { [key: string]: any },
+  IframeReturnType,
+  ReturnType = IframeReturnType
+>(
+  props: ModalInterface & {
+    clientId: string;
+    path: string;
+    procedure: keyof ProcedureTypes;
+    params: ProcedureTypes[keyof ProcedureTypes];
+    processResult?: (props: IframeReturnType) => ReturnType;
+  }
+): Promise<ReturnType | IframeReturnType> {
+  const modal = new Modal(props.modalContainer, props.modalStyles);
+  const uiIframeManager =
+    new EmbeddedWalletUiIframeCommunicator<ProcedureTypes>({
+      clientId: props.clientId,
+      container: modal.body,
+      path: props.path,
     });
+  modal.open({ communicator: uiIframeManager });
+  try {
+    const result = await uiIframeManager.call<IframeReturnType>(
+      props.procedure,
+      props.params
+    );
+    modal.close();
+    if (props.processResult) {
+      const toReturn = props.processResult(result);
+      return toReturn;
+    }
+    return result;
+  } catch (e) {
+    console.error(
+      "Error while running iframe in modal ui. This should not be happening. Reach to us and let us know how you got here."
+    );
+    modal.close();
+    throw e;
   }
 }

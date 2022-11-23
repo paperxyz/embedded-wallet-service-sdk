@@ -29,6 +29,7 @@ export const defaultModalStyles: ModalStyles = {
     maxWidth: "600px",
     width: "100%",
     animation: "pew-modal-slideIn 0.2s forwards",
+    height: "20%",
     maxHeight: "80vh",
     overflow: "auto",
   },
