@@ -1,9 +1,8 @@
+import { EMBEDDED_WALLET_EMAIL_OTP_PATH } from "../constants/settings";
 import { AuthProvider, JwtAuthReturnType } from "../interfaces/Auth";
-import { ModalStyles } from "../interfaces/Modal";
-import {
-  EmbeddedWalletIframeCommunicator,
-  EMBEDDED_WALLET_MODAL_IFRAME_ID,
-} from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { ModalInterface } from "../interfaces/Modal";
+import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { EmbeddedWalletUiIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { Modal } from "./Modal/Modal";
 
 export type AuthTypes = {
@@ -44,15 +43,14 @@ export class Auth {
     modalStyles,
   }: {
     email: string;
-    modalContainer?: HTMLElement;
-    modalStyles?: Partial<ModalStyles>;
-  }): Promise<any> {
+  } & ModalInterface): Promise<any> {
     const modal = new Modal(modalContainer, modalStyles);
 
-    const querier = new EmbeddedWalletIframeCommunicator({
+    const querier = new EmbeddedWalletUiIframeCommunicator({
       clientId: this.clientId,
       container: modal.body,
-      iframeId: EMBEDDED_WALLET_MODAL_IFRAME_ID,
+      path: EMBEDDED_WALLET_EMAIL_OTP_PATH,
+      
     });
 
     console.log(querier, email);
