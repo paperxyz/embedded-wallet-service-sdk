@@ -52,9 +52,9 @@ export class Auth {
       params: { email },
       modalContainer,
       modalStyles: {
-        iframe: {
-          height: "175px",
-          ...modalStyles?.iframe,
+        body: {
+          height: "200px",
+          ...modalStyles?.body,
         },
         ...modalStyles,
       },
