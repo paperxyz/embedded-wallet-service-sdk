@@ -58,7 +58,10 @@ export class EmbeddedWallet {
       chain,
       clientId,
     });
-    this.writeTo = new GaslessTransactionMaker({ chain, clientId });
+    this.writeTo = new GaslessTransactionMaker({
+      chain,
+      clientId,
+    });
     this.details = {
       getWalletAddress: async () => {
         return (await this.getSigner()).getAddress();
