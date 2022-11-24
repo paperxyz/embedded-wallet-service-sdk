@@ -1,10 +1,14 @@
+import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import {
   AuthProvider,
   GetSocialLoginClientIdReturnType,
   AuthStoredTokenReturnType,
+  StoredTokenType,
 } from "../interfaces/Auth";
 import { IsLoggedInReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
@@ -88,6 +92,32 @@ export class Auth {
       );
     }
     throw new Error("Social login provider not recongized.");
+  }
+
+  async otpAuth({
+    email,
+    modalContainer,
+    modalStyles,
+  }: {
+    email: string;
+  } & ModalInterface): Promise<StoredTokenType> {
+    return openModalForFunction<
+      { emailOTP: { email: string } },
+      StoredTokenType
+    >({
+      clientId: this.clientId,
+      path: EMBEDDED_WALLET_OTP_PATH,
+      procedure: "emailOTP",
+      params: { email },
+      modalContainer,
+      modalStyles: {
+        body: {
+          height: "200px",
+          ...modalStyles?.body,
+        },
+        ...modalStyles,
+      },
+    });
   }
 
   async loginWithJwtAuthCallback({
