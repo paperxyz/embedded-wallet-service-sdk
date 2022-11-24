@@ -5,6 +5,10 @@ export enum AuthProvider {
   CUSTOM_JWT = "CustomJWT",
 }
 
+export type GetSocialLoginClientIdReturnType = {
+  clientId: string;
+};
+
 export type JwtAuthReturnType = {
   jwtToken: string;
   authProvider: AuthProvider;
