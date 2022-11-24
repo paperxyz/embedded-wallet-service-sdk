@@ -1,12 +1,9 @@
-import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import {
   AuthProvider,
   GetSocialLoginClientIdReturnType,
   JwtAuthReturnType,
 } from "../interfaces/Auth";
-import { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
-import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   jwtAuth: {
@@ -21,10 +18,6 @@ export type AuthTypes = {
     code: string;
     redirectUri?: string;
   };
-};
-
-type AuthUiType = {
-  emailOTP: { email: string };
 };
 
 export class Auth {
@@ -102,29 +95,6 @@ export class Auth {
     return this.AuthQuerier.call<JwtAuthReturnType>("jwtAuth", {
       token,
       provider,
-    });
-  }
-
-  async otpAuth({
-    email,
-    modalContainer,
-    modalStyles,
-  }: {
-    email: string;
-  } & ModalInterface): Promise<JwtAuthReturnType> {
-    return openModalForFunction<AuthUiType, JwtAuthReturnType>({
-      clientId: this.clientId,
-      path: EMBEDDED_WALLET_OTP_PATH,
-      procedure: "emailOTP",
-      params: { email },
-      modalContainer,
-      modalStyles: {
-        body: {
-          height: "200px",
-          ...modalStyles?.body,
-        },
-        ...modalStyles,
-      },
     });
   }
 }
