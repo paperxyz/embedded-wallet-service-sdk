@@ -110,13 +110,7 @@ export class Auth {
       procedure: "emailOTP",
       params: { email },
       modalContainer,
-      modalStyles: {
-        body: {
-          height: "200px",
-          ...modalStyles?.body,
-        },
-        ...modalStyles,
-      },
+      modalStyles,
     });
   }
 

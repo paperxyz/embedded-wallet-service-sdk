@@ -22,8 +22,9 @@ export const defaultModalStyles: ModalStyles = {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   body: {
+    boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.25)",
     backgroundColor: "white",
-    borderRadius: "8px",
+    borderRadius: "12px",
     padding: "16px",
     position: "relative",
     maxWidth: "600px",
