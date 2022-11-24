@@ -140,6 +140,7 @@ export async function openModalForFunction<
   const modal = new Modal(props.modalContainer, props.modalStyles);
   const uiIframeManager =
     new EmbeddedWalletUiIframeCommunicator<ProcedureTypes>({
+      iframeStyles: props.modalStyles?.iframe,
       clientId: props.clientId,
       container: modal.body,
       path: props.path,
