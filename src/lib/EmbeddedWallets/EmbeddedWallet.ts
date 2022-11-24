@@ -9,7 +9,6 @@ import type {
   Chains,
   CreateWalletReturnType,
   HasWalletReturnType,
-  IsLoggedInReturnType,
   IsNewDeviceReturnType,
   PaperConstructorWithStylesType,
   SetUpNewDeviceReturnType,
@@ -43,7 +42,7 @@ export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
-  protected styles: CustomizationOptionsType;
+  protected styles: CustomizationOptionsType | undefined;
 
   public walletHoldings: WalletHoldings;
   public writeTo: GaslessTransactionMaker;
@@ -86,11 +85,6 @@ export class EmbeddedWallet {
         "isNewDevice"
       );
     return isNewDevice;
-  }
-  async isLoggedIn(): Promise<boolean> {
-    const { isLoggedIn } =
-      await this.walletManagerQuerier.call<IsLoggedInReturnType>("isLoggedIn");
-    return isLoggedIn;
   }
 
   /**
@@ -170,19 +164,17 @@ export class EmbeddedWallet {
    * Make sure to call this only after user is logged in.
    * @returns the wallet address of the logged in user.
    */
-  async initWallet(
-    modalStyles?: CustomizationOptionsType
-  ): Promise<{ walletAddress: string } | undefined> {
+  async initWallet(): Promise<{ walletAddress: string } | undefined> {
     if (!(await this.hasWallet())) {
       return this.createWallet({
         showUi: true,
-        ...modalStyles,
+        ...this.styles,
       });
     }
     if (await this.isNewDevice()) {
       return this.setUpNewDevice({
         showUi: true,
-        ...modalStyles,
+        ...this.styles,
       });
     }
     return;

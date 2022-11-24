@@ -3,6 +3,7 @@ import {
   GetSocialLoginClientIdReturnType,
   JwtAuthReturnType,
 } from "../interfaces/Auth";
+import { IsLoggedInReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type AuthTypes = {
@@ -18,6 +19,7 @@ export type AuthTypes = {
     code: string;
     redirectUri?: string;
   };
+  isLoggedIn: void;
 };
 
 export class Auth {
@@ -96,5 +98,12 @@ export class Auth {
       token,
       provider,
     });
+  }
+
+  async isLoggedIn(): Promise<boolean> {
+    const { isLoggedIn } = await this.AuthQuerier.call<IsLoggedInReturnType>(
+      "isLoggedIn"
+    );
+    return isLoggedIn;
   }
 }

@@ -1,5 +1,6 @@
 import { StyleObject } from "../../interfaces/Modal";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
+import { defaultModalStyles } from "../../lib/Modal/styles";
 
 export type IFrameCommunicatorProps = {
   link: string;
@@ -26,11 +27,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     link,
     iframeId,
     container = document.body,
-    iframeStyles = {
-      width: "0px",
-      height: "0px",
-      visibility: "hidden",
-    },
+    iframeStyles,
   }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
@@ -38,7 +35,11 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     if (!iframe || iframe.src != link) {
       if (!iframe) {
         iframe = document.createElement("iframe");
-        Object.assign(iframe.style, iframeStyles);
+        const mergedIframeStyles = {
+          ...defaultModalStyles.iframe,
+          iframeStyles,
+        };
+        Object.assign(iframe.style, mergedIframeStyles);
         iframe.setAttribute("id", iframeId);
         container.appendChild(iframe);
       }

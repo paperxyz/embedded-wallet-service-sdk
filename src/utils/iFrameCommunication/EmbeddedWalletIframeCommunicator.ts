@@ -15,6 +15,11 @@ export class EmbeddedWalletIframeCommunicator<
         path: EMBEDDED_WALLET_PATH,
       }).href,
       container: document.body,
+      iframeStyles: {
+        width: "0px",
+        height: "0px",
+        visibility: "hidden",
+      },
     });
   }
 }

@@ -6,7 +6,7 @@ export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
 // Class constructor types
 export type PaperBaseConstructorType = { clientId: string; chain: Chains };
 export type PaperConstructorWithStylesType = PaperBaseConstructorType & {
-  styles: CustomizationOptionsType;
+  styles?: CustomizationOptionsType;
 };
 
 export type CreateWalletReturnType = { walletAddress: string };
