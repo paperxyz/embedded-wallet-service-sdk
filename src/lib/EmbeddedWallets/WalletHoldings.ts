@@ -1,6 +1,6 @@
 import {
   Chains,
-  PaperConstructorType,
+  PaperBaseConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import {
   WalletHoldingInputType,
@@ -21,7 +21,7 @@ export class WalletHoldings {
   protected chain: Chains;
   protected walletHoldingQuerier: EmbeddedWalletIframeCommunicator<WalletHoldingQueryTypes>;
 
-  constructor({ chain, clientId }: PaperConstructorType) {
+  constructor({ chain, clientId }: PaperBaseConstructorType) {
     this.clientId = clientId;
     this.chain = chain;
     this.walletHoldingQuerier = new EmbeddedWalletIframeCommunicator({

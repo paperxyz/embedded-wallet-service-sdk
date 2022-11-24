@@ -1,6 +1,12 @@
+import { StyleObject } from "../../interfaces/Modal";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
 
-export type IFrameCommunicatorProps = { link: string; iframeId: string };
+export type IFrameCommunicatorProps = {
+  link: string;
+  iframeId: string;
+  container?: HTMLElement;
+  iframeStyles?: StyleObject;
+};
 
 function sleep(seconds: number) {
   return new Promise((resolve) => {
@@ -9,25 +15,32 @@ function sleep(seconds: number) {
 }
 
 // Global var to help track iframe state
-let isIframeLoaded = false;
+let isIframeLoaded = new Map<string, boolean>();
 
 export class IframeCommunicator<T extends { [key: string]: any }> {
   private iframe: HTMLIFrameElement;
   private POLLING_INTERVAL_SECONDS = 1.4;
   private POST_LOAD_BUFFER_SECONDS = 1;
-  constructor({ link, iframeId }: IFrameCommunicatorProps) {
+
+  constructor({
+    link,
+    iframeId,
+    container = document.body,
+    iframeStyles = {
+      width: "0px",
+      height: "0px",
+      visibility: "hidden",
+    },
+  }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
 
     if (!iframe || iframe.src != link) {
       if (!iframe) {
         iframe = document.createElement("iframe");
-        iframe.setAttribute(
-          "style",
-          "width: 0px; height: 0px; visibility: hidden;"
-        );
+        Object.assign(iframe.style, iframeStyles);
         iframe.setAttribute("id", iframeId);
-        document.body.appendChild(iframe);
+        container.appendChild(iframe);
       }
       iframe.src = link;
       iframe.onload = IframeCommunicator.onIframeLoadHandler(
@@ -51,7 +64,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           if (!data.success) {
             return rej(data.error);
           }
-          isIframeLoaded = true;
+          isIframeLoaded.set(iframe.src, true);
           return res(true);
         };
 
@@ -74,7 +87,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
 
   async call<ReturnData>(procedureName: keyof T, params: T[keyof T]) {
     const promise = new Promise<ReturnData>(async (res, rej) => {
-      while (!isIframeLoaded) {
+      while (!isIframeLoaded.get(this.iframe.src)) {
         await sleep(this.POLLING_INTERVAL_SECONDS);
       }
       const channel = new MessageChannel();
@@ -88,7 +101,6 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         }
         return res(data.data);
       };
-
       this.iframe.contentWindow?.postMessage(
         { eventType: procedureName, data: params },
         "*",
@@ -97,5 +109,12 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     });
     return promise;
   }
-}
 
+  /**
+   * This has to be called by any iframe that will be removed from the DOM.
+   * Use to make sure that we reset the global loaded state of the particular iframe.src
+   */
+  destroy() {
+    isIframeLoaded.delete(this.iframe.src);
+  }
+}

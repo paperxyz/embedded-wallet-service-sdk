@@ -9,3 +9,10 @@ export type MessageType<T> =
       success: false;
       error: Error;
     };
+export type CustomizationOptionsType = {
+  colorPrimary?: string;
+  colorBackground?: string;
+  colorText?: string;
+  borderRadius?: number;
+  fontFamily?: string;
+};

@@ -1,6 +1,6 @@
 import type {
   Chains,
-  PaperConstructorType,
+  PaperBaseConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type {
   ContractCallInputType,
@@ -19,7 +19,7 @@ export class GaslessTransactionMaker {
   protected chain: Chains;
   protected clientId: string;
   protected gaslessTransactionQuerier: EmbeddedWalletIframeCommunicator<GaslessTransactionQuerierTypes>;
-  constructor({ chain, clientId }: PaperConstructorType) {
+  constructor({ chain, clientId }: PaperBaseConstructorType) {
     this.chain = chain;
     this.clientId = clientId;
     this.gaslessTransactionQuerier = new EmbeddedWalletIframeCommunicator({

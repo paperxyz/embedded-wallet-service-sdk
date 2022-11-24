@@ -26,7 +26,6 @@ export class Auth {
 
   constructor({ clientId }: { clientId: string }) {
     this.clientId = clientId;
-
     this.AuthQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
