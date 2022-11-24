@@ -1,4 +1,4 @@
-import type { PaperConstructorType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type { PaperConstructorWithStylesType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { Auth } from "./Auth";
 import { EmbeddedWallet } from "./EmbeddedWallets/EmbeddedWallet";
 
@@ -8,9 +8,9 @@ export class PaperClient {
   User: EmbeddedWallet;
   Login: Auth;
 
-  constructor({ clientId, chain }: PaperConstructorType) {
+  constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
     this.Login = new Auth({ clientId });
-    this.User = new EmbeddedWallet({ clientId, chain });
+    this.User = new EmbeddedWallet({ clientId, chain, styles });
   }
 }

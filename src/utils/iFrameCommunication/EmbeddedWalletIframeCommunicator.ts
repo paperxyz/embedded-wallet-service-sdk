@@ -23,12 +23,22 @@ export class EmbeddedWalletIframeCommunicator<
 export function createEmbeddedWalletIframeLink({
   clientId,
   path,
+  queryParams,
 }: {
   clientId: string;
   path: string;
+  queryParams?: { [key: string]: string | number };
 }) {
   const embeddedWalletUrl = new URL(path, PAPER_APP_URL_ALT);
   embeddedWalletUrl.searchParams.set("clientId", clientId);
+  if (queryParams) {
+    for (const queryKey of Object.keys(queryParams)) {
+      embeddedWalletUrl.searchParams.set(
+        queryKey,
+        queryParams[queryKey].toString()
+      );
+    }
+  }
   return embeddedWalletUrl;
 }
 export const EMBEDDED_WALLET_IFRAME_ID = "paper-embedded-wallet-iframe";

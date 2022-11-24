@@ -9,11 +9,12 @@ import type {
   Chains,
   CreateWalletReturnType,
   HasWalletReturnType,
+  IsLoggedInReturnType,
   IsNewDeviceReturnType,
-  PaperConstructorType,
+  PaperConstructorWithStylesType,
   SetUpNewDeviceReturnType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { ModalInterface } from "../../interfaces/Modal";
+import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "../Modal/Modal";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
@@ -25,6 +26,7 @@ export type WalletManagementTypes = {
   setUpNewDevice: { recoveryPassword: string };
   hasWallet: void;
   isNewDevice: void;
+  isLoggedIn: void;
 };
 export type WalletManagementUiTypes = {
   createWallet: void;
@@ -35,20 +37,22 @@ export type EmbeddedWalletInternalHelperType =
   | { recoveryPassword: string; showUi: false }
   | ({
       showUi: true;
-    } & ModalInterface);
+    } & CustomizationOptionsType);
 
 export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
+  protected styles: CustomizationOptionsType;
 
   public walletHoldings: WalletHoldings;
   public writeTo: GaslessTransactionMaker;
   public details: { getWalletAddress: () => Promise<string> };
 
-  constructor({ clientId, chain }: PaperConstructorType) {
+  constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
     this.chain = chain;
+    this.styles = styles;
 
     this.walletManagerQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
@@ -62,6 +66,8 @@ export class EmbeddedWallet {
       chain,
       clientId,
     });
+
+    // convenience functions
     this.details = {
       getWalletAddress: async () => {
         return (await this.getSigner()).getAddress();
@@ -80,6 +86,11 @@ export class EmbeddedWallet {
         "isNewDevice"
       );
     return isNewDevice;
+  }
+  async isLoggedIn(): Promise<boolean> {
+    const { isLoggedIn } =
+      await this.walletManagerQuerier.call<IsLoggedInReturnType>("isLoggedIn");
+    return isLoggedIn;
   }
 
   /**
@@ -102,12 +113,18 @@ export class EmbeddedWallet {
         // takes one more type for the expected return type
         // use in conjunction with processResult to get the proper return type shape
       >({
-        modalContainer: props.modalContainer,
-        modalStyles: props.modalStyles,
+        modalStyles: {
+          body: {
+            backgroundColor: props.colorBackground,
+          },
+        },
         clientId: this.clientId,
         path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
         procedure: "createWallet",
         params: undefined,
+        customizationOptions: {
+          ...props,
+        },
       });
     }
     return this.walletManagerQuerier.call<CreateWalletReturnType>(
@@ -126,12 +143,18 @@ export class EmbeddedWallet {
         WalletManagementUiTypes,
         SetUpNewDeviceReturnType
       >({
-        modalContainer: props.modalContainer,
-        modalStyles: props.modalStyles,
+        modalStyles: {
+          body: {
+            backgroundColor: props.colorBackground,
+          },
+        },
         clientId: this.clientId,
         path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
         procedure: "setUpNewDevice",
         params: undefined,
+        customizationOptions: {
+          ...props,
+        },
       });
     }
     return this.walletManagerQuerier.call<SetUpNewDeviceReturnType>(
@@ -148,7 +171,7 @@ export class EmbeddedWallet {
    * @returns the wallet address of the logged in user.
    */
   async initWallet(
-    modalStyles?: ModalInterface
+    modalStyles?: CustomizationOptionsType
   ): Promise<{ walletAddress: string } | undefined> {
     if (!(await this.hasWallet())) {
       return this.createWallet({

@@ -1,4 +1,5 @@
 import { StyleObject } from "../../interfaces/Modal";
+import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { defaultModalStyles } from "../../lib/Modal/styles";
 import { createEmbeddedWalletIframeLink } from "./EmbeddedWalletIframeCommunicator";
 import { IframeCommunicator } from "./IframeCommunicator";
@@ -10,18 +11,25 @@ export class EmbeddedWalletUiIframeCommunicator<
     clientId,
     path,
     container,
-    styles = defaultModalStyles.iframe,
+    customizationOptions,
+    iframeStyles = defaultModalStyles.iframe,
   }: {
     clientId: string;
     path: string;
     container: HTMLElement;
-    styles?: StyleObject;
+    iframeStyles?: StyleObject;
+    customizationOptions?: CustomizationOptionsType;
   }) {
+    const queryParams = customizationOptions;
     super({
       iframeId: EMBEDDED_WALLET_MODAL_UI_IFRAME_ID,
-      link: createEmbeddedWalletIframeLink({ clientId, path }).href,
+      link: createEmbeddedWalletIframeLink({
+        clientId,
+        path,
+        queryParams,
+      }).href,
       container,
-      iframeStyles: styles,
+      iframeStyles,
     });
   }
 }

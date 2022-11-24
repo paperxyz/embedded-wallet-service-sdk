@@ -3,6 +3,7 @@ import {
   ModalStyles,
   StyleObject,
 } from "../../interfaces/Modal";
+import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
 import { defaultModalStyles, modalKeyframeAnimations } from "./styles";
@@ -133,6 +134,7 @@ export async function openModalForFunction<
     procedure: keyof ProcedureTypes;
     params: ProcedureTypes[keyof ProcedureTypes];
     processResult?: (props: IframeReturnType) => ReturnType;
+    customizationOptions?: CustomizationOptionsType;
   }
 ): Promise<ReturnType | IframeReturnType> {
   const modal = new Modal(props.modalContainer, props.modalStyles);
@@ -141,6 +143,7 @@ export async function openModalForFunction<
       clientId: props.clientId,
       container: modal.body,
       path: props.path,
+      customizationOptions: props.customizationOptions,
     });
   modal.open({ communicator: uiIframeManager });
   try {
