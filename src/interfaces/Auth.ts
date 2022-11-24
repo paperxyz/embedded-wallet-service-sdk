@@ -9,8 +9,12 @@ export type GetSocialLoginClientIdReturnType = {
   clientId: string;
 };
 
-export type JwtAuthReturnType = {
+export type StoredTokenType = {
   jwtToken: string;
   authProvider: AuthProvider;
   developerClientId: string;
+};
+
+export type AuthStoredTokenReturnType = {
+  storedToken: StoredTokenType;
 };

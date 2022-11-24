@@ -1,13 +1,13 @@
 import {
   AuthProvider,
   GetSocialLoginClientIdReturnType,
-  JwtAuthReturnType,
+  AuthStoredTokenReturnType,
 } from "../interfaces/Auth";
 import { IsLoggedInReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type AuthTypes = {
-  jwtAuth: {
+  loginWithJwtAuthCallback: {
     token: string;
     provider: AuthProvider;
   };
@@ -61,13 +61,13 @@ export class Auth {
     throw new Error("Social login provider not recongized.");
   }
 
-  async handleSocialLoginCallback({
+  async loginWithSocialOAuth({
     provider,
     redirectUri,
   }: {
     provider: AuthProvider.GOOGLE;
     redirectUri: string;
-  }): Promise<JwtAuthReturnType> {
+  }): Promise<AuthStoredTokenReturnType> {
     if (provider === AuthProvider.GOOGLE) {
       // Get the authorization code from the URL query string
       // Make a call to the iframe with the authorization code
@@ -78,26 +78,32 @@ export class Auth {
           "No authorization code found in the URL. Make sure to call this function in an authorized redirect_uri location that was set on your Google dashboard."
         );
       }
-      return this.AuthQuerier.call<JwtAuthReturnType>("loginWithOAuthCode", {
-        code: authorizationCode,
-        provider,
-        redirectUri,
-      });
+      return this.AuthQuerier.call<AuthStoredTokenReturnType>(
+        "loginWithOAuthCode",
+        {
+          code: authorizationCode,
+          provider,
+          redirectUri,
+        }
+      );
     }
     throw new Error("Social login provider not recongized.");
   }
 
-  async handleJwtAuthCallback({
+  async loginWithJwtAuthCallback({
     token,
     provider,
   }: {
     token: string;
     provider: AuthProvider;
-  }): Promise<JwtAuthReturnType> {
-    return this.AuthQuerier.call<JwtAuthReturnType>("jwtAuth", {
-      token,
-      provider,
-    });
+  }): Promise<AuthStoredTokenReturnType> {
+    return this.AuthQuerier.call<AuthStoredTokenReturnType>(
+      "loginWithJwtAuthCallback",
+      {
+        token,
+        provider,
+      }
+    );
   }
 
   async isLoggedIn(): Promise<boolean> {
