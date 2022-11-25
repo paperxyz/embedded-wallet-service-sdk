@@ -100,18 +100,20 @@ export class Auth {
     modalStyles,
   }: {
     email: string;
-  } & ModalInterface): Promise<StoredTokenType> {
-    return openModalForFunction<
-      { emailOTP: { email: string } },
-      StoredTokenType
-    >({
-      clientId: this.clientId,
-      path: EMBEDDED_WALLET_OTP_PATH,
-      procedure: "emailOTP",
-      params: { email },
-      modalContainer,
-      modalStyles,
-    });
+  } & ModalInterface): Promise<StoredTokenType | Boolean> {
+    const isLoggedIn = await this.isLoggedIn();
+
+    return (
+      isLoggedIn ||
+      openModalForFunction<{ emailOTP: { email: string } }, StoredTokenType>({
+        clientId: this.clientId,
+        path: EMBEDDED_WALLET_OTP_PATH,
+        procedure: "emailOTP",
+        params: { email },
+        modalContainer,
+        modalStyles,
+      })
+    );
   }
 
   async loginWithJwtAuthCallback({
@@ -131,9 +133,8 @@ export class Auth {
   }
 
   async isLoggedIn(): Promise<boolean> {
-    const { isLoggedIn } = await this.AuthQuerier.call<IsLoggedInReturnType>(
-      "isLoggedIn"
-    );
-    return isLoggedIn;
+    const { isUserLoggedIn } =
+      await this.AuthQuerier.call<IsLoggedInReturnType>("isLoggedIn");
+    return isUserLoggedIn;
   }
 }
