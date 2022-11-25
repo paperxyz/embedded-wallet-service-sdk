@@ -1,6 +1,6 @@
 import { StyleObject } from "../../interfaces/Modal";
 import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
-import { defaultModalStyles } from "../../lib/Modal/styles";
+import { getDefaultModalStyles } from "../../lib/Modal/styles";
 import { createEmbeddedWalletIframeLink } from "./EmbeddedWalletIframeCommunicator";
 import { IframeCommunicator } from "./IframeCommunicator";
 
@@ -12,7 +12,7 @@ export class EmbeddedWalletUiIframeCommunicator<
     path,
     container,
     customizationOptions,
-    iframeStyles = defaultModalStyles.iframe,
+    iframeStyles = getDefaultModalStyles().iframe,
   }: {
     clientId: string;
     path: string;
