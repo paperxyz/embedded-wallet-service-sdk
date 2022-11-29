@@ -48,7 +48,7 @@ export class Auth {
    * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
    * @param {string | undefined} socialLoginParam.scope The scope that the login will provide access too.
    */
-  async redirectToSocialLogin({
+  async loginWithSocialOAuth({
     provider,
     redirectUri,
     scope,
@@ -82,7 +82,7 @@ export class Auth {
    * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
-  async loginWithSocialOAuth({
+  async loginWithSocialOAuthCallback({
     provider,
     redirectUri,
   }: {
@@ -111,7 +111,7 @@ export class Auth {
     throw new Error("Social login provider not recognized.");
   }
 
-  async otpAuth({
+  async loginWithOTP({
     email,
     modalContainer,
     modalStyles,
