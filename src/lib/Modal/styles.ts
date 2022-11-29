@@ -7,7 +7,7 @@ const fullScreen = {
   bottom: "0px",
 };
 
-export const defaultModalStyles: ModalStyles = {
+export const getDefaultModalStyles = (): ModalStyles => ({
   main: {
     ...fullScreen,
     position: "fixed",
@@ -22,8 +22,11 @@ export const defaultModalStyles: ModalStyles = {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   body: {
-    backgroundColor: "white",
-    borderRadius: "8px",
+    boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.25)",
+    backgroundColor: window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "#2F2F2F"
+      : "white",
+    borderRadius: "12px",
     padding: "16px",
     position: "relative",
     maxWidth: "600px",
@@ -37,8 +40,10 @@ export const defaultModalStyles: ModalStyles = {
     height: "100%",
     width: "100%",
     border: "none",
+    backgroundColor: "transparent",
+    visibility: "hidden",
   },
-};
+});
 
 export const modalKeyframeAnimations = `
   @keyframes pew-modal-slideIn {

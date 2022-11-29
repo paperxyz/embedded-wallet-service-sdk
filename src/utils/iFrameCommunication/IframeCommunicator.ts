@@ -1,6 +1,6 @@
 import { StyleObject } from "../../interfaces/Modal";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
-import { defaultModalStyles } from "../../lib/Modal/styles";
+import { getDefaultModalStyles } from "../../lib/Modal/styles";
 
 export type IFrameCommunicatorProps = {
   link: string;
@@ -36,7 +36,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       if (!iframe) {
         iframe = document.createElement("iframe");
         const mergedIframeStyles = {
-          ...defaultModalStyles.iframe,
+          ...getDefaultModalStyles().iframe,
           iframeStyles,
         };
         Object.assign(iframe.style, mergedIframeStyles);
@@ -81,6 +81,8 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           "*",
           [channel.port2]
         );
+
+        iframe.style.visibility = "visible";
       });
       await promise;
     };

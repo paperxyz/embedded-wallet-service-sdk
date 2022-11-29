@@ -6,17 +6,17 @@ import {
 import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
-import { defaultModalStyles, modalKeyframeAnimations } from "./styles";
+import { getDefaultModalStyles, modalKeyframeAnimations } from "./styles";
 export class Modal {
   protected container: HTMLElement;
-  protected styles = defaultModalStyles;
   protected main: HTMLDivElement;
   protected overlay: HTMLDivElement;
   protected iframe: HTMLIFrameElement;
 
   protected style: HTMLStyleElement;
-  body: HTMLDivElement;
   protected iframeCommunicator: IframeCommunicator<{}> | undefined;
+  styles = getDefaultModalStyles();
+  body: HTMLDivElement;
 
   constructor(container?: HTMLElement, styles?: Partial<ModalStyles>) {
     this.container = container || document.body;
@@ -47,6 +47,7 @@ export class Modal {
       this.iframe.src = iframeUrl;
       this.body.appendChild(this.iframe);
     }
+
     this.iframeCommunicator = communicator;
 
     this.addAccessibility();
@@ -150,7 +151,13 @@ export async function openModalForFunction<
       clientId: props.clientId,
       container: modal.body,
       path: props.path,
-      customizationOptions: props.customizationOptions,
+      customizationOptions: {
+        ...props.customizationOptions,
+        colorBackground:
+          props.customizationOptions?.colorBackground ||
+          modal.styles.body.backgroundColor ||
+          modal.styles.body.background,
+      },
     });
   modal.open({ communicator: uiIframeManager });
   try {

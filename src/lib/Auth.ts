@@ -1,14 +1,18 @@
-import {
+import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
+import type {
   AuthProvider,
   AuthStoredTokenReturnType,
   GetSocialLoginClientIdReturnType,
+  StoredTokenType,
 } from "../interfaces/Auth";
-import {
+import type {
   GetAuthDetailsReturnType,
   IsLoggedInReturnType,
   LogoutReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
@@ -105,6 +109,28 @@ export class Auth {
       );
     }
     throw new Error("Social login provider not recognized.");
+  }
+
+  async otpAuth({
+    email,
+    modalContainer,
+    modalStyles,
+  }: {
+    email: string;
+  } & ModalInterface): Promise<StoredTokenType | Boolean> {
+    const isLoggedIn = await this.isLoggedIn();
+
+    return (
+      isLoggedIn ||
+      openModalForFunction<{ emailOTP: { email: string } }, StoredTokenType>({
+        clientId: this.clientId,
+        path: EMBEDDED_WALLET_OTP_PATH,
+        procedure: "emailOTP",
+        params: { email },
+        modalContainer,
+        modalStyles,
+      })
+    );
   }
 
   /**
