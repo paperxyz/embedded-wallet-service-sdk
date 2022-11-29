@@ -14,3 +14,4 @@ export type SetUpNewDeviceReturnType = { walletAddress: string };
 export type HasWalletReturnType = { hasWallet: boolean };
 export type IsNewDeviceReturnType = { isNewDevice: boolean };
 export type IsLoggedInReturnType = { isLoggedIn: boolean };
+export type logoutReturnType = { success: boolean };

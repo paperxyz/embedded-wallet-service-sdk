@@ -1,9 +1,12 @@
 import {
   AuthProvider,
-  GetSocialLoginClientIdReturnType,
   AuthStoredTokenReturnType,
+  GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
-import { IsLoggedInReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import {
+  IsLoggedInReturnType,
+  logoutReturnType,
+} from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type AuthTypes = {
@@ -20,6 +23,7 @@ export type AuthTypes = {
     redirectUri?: string;
   };
   isLoggedIn: void;
+  logout: void;
 };
 
 export class Auth {
@@ -111,5 +115,10 @@ export class Auth {
       "isLoggedIn"
     );
     return isLoggedIn;
+  }
+
+  async logout(): Promise<boolean> {
+    const { success } = await this.AuthQuerier.call<logoutReturnType>("logout");
+    return success;
   }
 }
