@@ -88,8 +88,6 @@ export class EmbeddedWallet {
   }
 
   /**
-   * Wil throw if attempting to create wallet for a user who already has a wallet.
-   * Make sure to call `Paper.Login.Auth` first.
    * @param showUi if false, recoveryPassword is needed
    * @param recoveryPassword Must follow good password practice. As of writing this
    * * pwd >= 6 character
@@ -183,7 +181,6 @@ export class EmbeddedWallet {
   async getSigner(network?: {
     rpcEndpoint: Networkish;
   }): Promise<EthersSigner> {
-    await this.initWallet();
     const signer = new EthersSigner({
       clientId: this.clientId,
       provider: getDefaultProvider(
