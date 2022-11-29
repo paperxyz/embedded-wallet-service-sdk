@@ -16,7 +16,6 @@ import type {
 import { WalletSetUp } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
-import { Auth } from "../Auth";
 import { openModalForFunction } from "../Modal/Modal";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
@@ -43,7 +42,6 @@ export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
-  protected auth: Auth;
   protected styles: CustomizationOptionsType | undefined;
 
   public writeTo: GaslessTransactionMaker;
@@ -52,16 +50,10 @@ export class EmbeddedWallet {
    * Not meant to be initialized directly. Call {@link PaperClient.getUser} to get an instance
    * @param param0
    */
-  constructor({
-    clientId,
-    chain,
-    styles,
-    auth,
-  }: PaperConstructorWithStylesType & { auth: Auth }) {
+  constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
     this.chain = chain;
     this.styles = styles;
-    this.auth = auth;
     this.walletManagerQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
@@ -78,9 +70,6 @@ export class EmbeddedWallet {
    * @returns {boolean} true if the user already has a wallet created. false otherwise
    */
   async hasWallet(): Promise<boolean> {
-    if (!(await this.auth.isLoggedIn())) {
-      throw new Error("User is not logged in.");
-    }
     const { hasWallet } =
       await this.walletManagerQuerier.call<HasWalletReturnType>("hasWallet");
     return hasWallet;

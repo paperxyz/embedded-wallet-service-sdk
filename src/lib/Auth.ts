@@ -178,7 +178,7 @@ export class Auth {
    * Returns information associated with user that is currently authenticated
    * @returns {Object | undefined} An object containing the email if it exists
    */
-  async getAuthDetails(): Promise<GetAuthDetailsReturnType | undefined> {
+  async getDetails(): Promise<GetAuthDetailsReturnType | undefined> {
     return { email: "" };
   }
 }

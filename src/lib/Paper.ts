@@ -12,7 +12,7 @@ export class PaperClient {
   /**
    * Used to manage the Auth state of the user
    */
-  Login: Auth;
+  Auth: Auth;
 
   /**
    * @example
@@ -23,12 +23,11 @@ export class PaperClient {
    */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
-    this.Login = new Auth({ clientId });
+    this.Auth = new Auth({ clientId });
     this.wallet = new EmbeddedWallet({
       clientId,
       chain,
       styles,
-      auth: this.Login,
     });
   }
 
@@ -60,13 +59,13 @@ export class PaperClient {
       } & Partial<Omit<SetUpWalletReturnType, "walletAddress">>)
     | undefined
   > {
-    if (await this.Login.isLoggedIn()) {
+    if (await this.Auth.isLoggedIn()) {
       const result = await this.wallet.initWallet();
       if (result) {
         return {
           ...result,
           wallet: this.wallet,
-          emailAddress: (await this.Login.getAuthDetails())?.email,
+          emailAddress: (await this.Auth.getDetails())?.email,
         };
       }
       return {
@@ -74,7 +73,7 @@ export class PaperClient {
         walletAddress: await (
           await this.wallet.getEtherJsSigner()
         ).getAddress(),
-        emailAddress: (await this.Login.getAuthDetails())?.email,
+        emailAddress: (await this.Auth.getDetails())?.email,
       };
     }
     return;
