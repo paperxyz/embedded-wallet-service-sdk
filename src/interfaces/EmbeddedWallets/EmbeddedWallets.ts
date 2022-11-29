@@ -9,9 +9,18 @@ export type PaperConstructorWithStylesType = PaperBaseConstructorType & {
   styles?: CustomizationOptionsType;
 };
 
-export type CreateWalletReturnType = { walletAddress: string };
-export type SetUpNewDeviceReturnType = { walletAddress: string };
+export enum WalletSetUp {
+  NewWallet,
+  NewDevice,
+}
+export type WalletAddressObject = {
+  walletAddress: string;
+};
+export type SetUpWalletReturnType = WalletAddressObject & {
+  walletSetUp: WalletSetUp;
+};
 export type HasWalletReturnType = { hasWallet: boolean };
 export type IsNewDeviceReturnType = { isNewDevice: boolean };
-export type IsLoggedInReturnType = { isLoggedIn: boolean };
-export type logoutReturnType = { success: boolean };
+export type IsLoggedInReturnType = { isUserLoggedIn: boolean };
+export type LogoutReturnType = { success: boolean };
+export type GetAuthDetailsReturnType = { email: string };

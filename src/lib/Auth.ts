@@ -4,8 +4,9 @@ import {
   GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
 import {
+  GetAuthDetailsReturnType,
   IsLoggedInReturnType,
-  logoutReturnType,
+  LogoutReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
@@ -37,6 +38,12 @@ export class Auth {
     });
   }
 
+  /**
+   * Used to initiate the Paper managed social login flow.
+   * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
+   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
+   * @param {string | undefined} socialLoginParam.scope The scope that the login will provide access too.
+   */
   async redirectToSocialLogin({
     provider,
     redirectUri,
@@ -65,6 +72,12 @@ export class Auth {
     throw new Error("Social login provider not recongized.");
   }
 
+  /**
+   *
+   * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
+   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
+   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
+   */
   async loginWithSocialOAuth({
     provider,
     redirectUri,
@@ -91,9 +104,15 @@ export class Auth {
         }
       );
     }
-    throw new Error("Social login provider not recongized.");
+    throw new Error("Social login provider not recognized.");
   }
 
+  /**
+   * Used to log the user in with an oauth login flow
+   * @param {string} jwtParams.token The associate token from the oauth callback
+   * @param {AuthProvider} jwtParams.provider The Auth provider that is being used
+   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
+   */
   async loginWithJwtAuthCallback({
     token,
     provider,
@@ -110,15 +129,30 @@ export class Auth {
     );
   }
 
+  /**
+   * Checks to see if there is a user logged in and is able to access their wallet
+   * @returns {boolean} true if there is a user that is logged in. false otherwise
+   */
   async isLoggedIn(): Promise<boolean> {
-    const { isLoggedIn } = await this.AuthQuerier.call<IsLoggedInReturnType>(
-      "isLoggedIn"
-    );
-    return isLoggedIn;
+    const { isUserLoggedIn } =
+      await this.AuthQuerier.call<IsLoggedInReturnType>("isLoggedIn");
+    return isUserLoggedIn;
   }
 
+  /**
+   * Logs any existing user out of their wallet.
+   * @returns {boolean} true if a user is successfully logged out. false if no user exists or something went wrong logging the user out.
+   */
   async logout(): Promise<boolean> {
-    const { success } = await this.AuthQuerier.call<logoutReturnType>("logout");
+    const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
     return success;
+  }
+
+  /**
+   * Returns information associated with user that is currently authenticated
+   * @returns {Object | undefined} An object containing the email if it exists
+   */
+  async getAuthDetails(): Promise<GetAuthDetailsReturnType | undefined> {
+    return { email: "" };
   }
 }
