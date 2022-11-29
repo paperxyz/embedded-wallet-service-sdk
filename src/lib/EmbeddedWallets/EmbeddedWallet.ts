@@ -5,16 +5,16 @@ import {
   EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
   EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
 } from "../../constants/settings";
-import {
+import type {
   Chains,
   HasWalletReturnType,
   IsNewDeviceReturnType,
   PaperConstructorWithStylesType,
   SetUpWalletReturnType,
   WalletAddressObject,
-  WalletSetUp,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
+import { WalletSetUp } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { Auth } from "../Auth";
 import { openModalForFunction } from "../Modal/Modal";

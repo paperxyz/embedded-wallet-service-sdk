@@ -1,10 +1,10 @@
 import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import type {
-  AuthProvider,
   AuthStoredTokenReturnType,
   GetSocialLoginClientIdReturnType,
   StoredTokenType,
 } from "../interfaces/Auth";
+import { AuthProvider } from "../interfaces/Auth";
 import type {
   GetAuthDetailsReturnType,
   IsLoggedInReturnType,
