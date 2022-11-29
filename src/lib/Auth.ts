@@ -45,7 +45,7 @@ export class Auth {
   /**
    * Used to initiate the Paper managed social login flow.
    * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
-   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
+   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuthCallback} on that page to complete the login process. @TODO
    * @param {string | undefined} socialLoginParam.scope The scope that the login will provide access too.
    */
   async loginWithSocialOAuth({
@@ -79,7 +79,7 @@ export class Auth {
   /**
    *
    * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
-   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process
+   * @param {string} socialLoginParam.redirectUri @TODO
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
   async loginWithSocialOAuthCallback({
