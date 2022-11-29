@@ -99,13 +99,13 @@ export class Auth {
     modalContainer,
     modalStyles,
   }: {
-    email: string;
+    email?: string;
   } & ModalInterface): Promise<StoredTokenType | Boolean> {
     const isLoggedIn = await this.isLoggedIn();
 
     return (
       isLoggedIn ||
-      openModalForFunction<{ emailOTP: { email: string } }, StoredTokenType>({
+      openModalForFunction<{ emailOTP: { email?: string } }, StoredTokenType>({
         clientId: this.clientId,
         path: EMBEDDED_WALLET_OTP_PATH,
         procedure: "emailOTP",
