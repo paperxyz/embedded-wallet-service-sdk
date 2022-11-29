@@ -7,18 +7,18 @@ import {
 } from "../../constants/settings";
 import type {
   Chains,
-  CreateWalletReturnType,
   HasWalletReturnType,
   IsNewDeviceReturnType,
   PaperConstructorWithStylesType,
-  SetUpNewDeviceReturnType,
+  SetUpWalletReturnType,
+  WalletAddressObject,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
+import { WalletSetUp } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "../Modal/Modal";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
-import { WalletHoldings } from "./WalletHoldings";
 
 export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
@@ -44,41 +44,41 @@ export class EmbeddedWallet {
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
   protected styles: CustomizationOptionsType | undefined;
 
-  public walletHoldings: WalletHoldings;
   public writeTo: GaslessTransactionMaker;
-  public details: { getWalletAddress: () => Promise<string> };
 
+  /**
+   * Not meant to be initialized directly. Call {@link PaperClient.getUser} to get an instance
+   * @param param0
+   */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
     this.chain = chain;
     this.styles = styles;
-
     this.walletManagerQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
 
-    this.walletHoldings = new WalletHoldings({
-      chain,
-      clientId,
-    });
     this.writeTo = new GaslessTransactionMaker({
       chain,
       clientId,
     });
-
-    // convenience functions
-    this.details = {
-      getWalletAddress: async () => {
-        return (await this.getSigner()).getAddress();
-      },
-    };
   }
 
+  /**
+   * Checks to see if user has set-up a wallet before.
+   * @throws if user is not logged in yet
+   * @returns {boolean} true if the user already has a wallet created. false otherwise
+   */
   async hasWallet(): Promise<boolean> {
     const { hasWallet } =
       await this.walletManagerQuerier.call<HasWalletReturnType>("hasWallet");
     return hasWallet;
   }
+
+  /**
+   * Checks to see if the users is on a new device
+   * @returns {boolean} true if the user is on a new device. false otherwise. Note that users who do not have a wallet will also be considered as on a new device
+   */
   async isNewDevice(): Promise<boolean> {
     const { isNewDevice } =
       await this.walletManagerQuerier.call<IsNewDeviceReturnType>(
@@ -88,22 +88,22 @@ export class EmbeddedWallet {
   }
 
   /**
-   * Wil throw if attempting to create wallet for a user who already has a wallet.
-   * Make sure to call `Paper.Login.Auth` first.
-   * @param showUi if false, recoveryPassword is needed
-   * @param recoveryPassword Must follow good password practice. As of writing this
+   * @private
+   * @param props.showUi if false, recoveryPassword is needed
+   * @param props.recoveryPassword Must follow good password practice. As of writing this:
    * * pwd >= 6 character
-   * @returns the wallet address of the created wallet
+   * @returns {{walletAddress: string}} an object containing the user's wallet address
    */
   private async createWallet(
     props: EmbeddedWalletInternalHelperType
-  ): Promise<CreateWalletReturnType> {
+  ): Promise<SetUpWalletReturnType> {
+    let walletAddress: string;
     if (props.showUi) {
-      return openModalForFunction<
+      ({ walletAddress } = await openModalForFunction<
         // functions that we can call on the iframe located at path
         WalletManagementUiTypes,
         // the return type of the iframe
-        CreateWalletReturnType
+        WalletAddressObject
         // takes one more type for the expected return type
         // use in conjunction with processResult to get the proper return type shape
       >({
@@ -119,23 +119,32 @@ export class EmbeddedWallet {
         customizationOptions: {
           ...props,
         },
-      });
+      }));
+    } else {
+      ({ walletAddress } =
+        await this.walletManagerQuerier.call<WalletAddressObject>(
+          "createWallet",
+          {
+            recoveryPassword: props.recoveryPassword,
+          }
+        ));
     }
-    return this.walletManagerQuerier.call<CreateWalletReturnType>(
-      "createWallet",
-      {
-        recoveryPassword: props.recoveryPassword,
-      }
-    );
+    return { walletAddress, walletSetUp: WalletSetUp.NewWallet };
   }
 
+  /**
+   * @private
+   * @param {Object} props options to either show or not show UI.
+   * @returns {{walletAddress: string}} an object containing the user's wallet address
+   */
   private async setUpNewDevice(
     props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpNewDeviceReturnType> {
+  ): Promise<SetUpWalletReturnType> {
+    let walletAddress: string;
     if (props.showUi) {
-      return openModalForFunction<
+      ({ walletAddress } = await openModalForFunction<
         WalletManagementUiTypes,
-        SetUpNewDeviceReturnType
+        WalletAddressObject
       >({
         modalStyles: {
           body: {
@@ -149,22 +158,26 @@ export class EmbeddedWallet {
         customizationOptions: {
           ...props,
         },
-      });
+      }));
+    } else {
+      ({ walletAddress } =
+        await this.walletManagerQuerier.call<WalletAddressObject>(
+          "setUpNewDevice",
+          {
+            recoveryPassword: props.recoveryPassword,
+          }
+        ));
     }
-    return this.walletManagerQuerier.call<SetUpNewDeviceReturnType>(
-      "setUpNewDevice",
-      {
-        recoveryPassword: props.recoveryPassword,
-      }
-    );
+    return { walletAddress, walletSetUp: WalletSetUp.NewDevice };
   }
 
   /**
    * Use to initialize the wallet of the logged in user.
-   * Make sure to call this only after user is logged in.
+   * Note that you don't have to call this directly.
+   * This is called under the hood when you call {@link PaperClient.getUser}
    * @returns the wallet address of the logged in user.
    */
-  async initWallet(): Promise<{ walletAddress: string } | undefined> {
+  async initWallet(): Promise<SetUpWalletReturnType | undefined> {
     if (!(await this.hasWallet())) {
       return this.createWallet({
         showUi: true,
@@ -180,10 +193,21 @@ export class EmbeddedWallet {
     return;
   }
 
-  async getSigner(network?: {
+  /**
+   * Returns an Ether.Js compatible signer that you can use in conjunction with the rest of dApp
+   * @example
+   * const Paper = new PaperClient({clientId: "", chain: "Polygon"})
+   * const user = await Paper.getUser();
+   * // returns a signer on the Polygon mainnet
+   * const signer = await user.getEtherJsSigner()
+   * // returns a signer that is on the ethereum mainnet
+   * const signer = await user.getEtherJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"})
+   * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
+   * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperClient} instance
+   */
+  async getEtherJsSigner(network?: {
     rpcEndpoint: Networkish;
   }): Promise<EthersSigner> {
-    await this.initWallet();
     const signer = new EthersSigner({
       clientId: this.clientId,
       provider: getDefaultProvider(
