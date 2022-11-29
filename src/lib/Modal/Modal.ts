@@ -72,22 +72,28 @@ export class Modal {
       this.main.remove();
     });
 
-    window.removeEventListener("keydown", this.onKeyDown);
+    // window.removeEventListener("keydown", this.onKeyDown);
   }
 
   protected addListeners() {
-    this.overlay.addEventListener("click", () => {
-      this.close();
-    });
-
-    window.addEventListener("keydown", this.onKeyDown);
+    /**
+     * TODO : Figure out a way to add handlers while not affecting code flow
+     * example: Dev call otpLogin which opens anm iframe asking for code.
+     * User clicks esc.
+     * What happens to the dev flow now? Do we provide a callback + options to not allow clicking out?
+     * If so, how should we pass around the callback? Seems excessive for not a lot of impact.
+     */
+    // this.overlay.addEventListener("click", () => {
+    //   this.close();
+    // });
+    // window.addEventListener("keydown", this.onKeyDown);
   }
 
-  protected onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      this.close();
-    }
-  };
+  // protected onKeyDown = (e: KeyboardEvent) => {
+  //   if (e.key === "Escape") {
+  //     this.close();
+  //   }
+  // };
 
   protected mergeStyles(styles: Partial<ModalStyles>) {
     this.styles.body = {
