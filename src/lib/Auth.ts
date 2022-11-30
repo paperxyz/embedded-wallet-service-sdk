@@ -2,7 +2,6 @@ import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import type {
   AuthStoredTokenReturnType,
   GetSocialLoginClientIdReturnType,
-  StoredTokenType,
 } from "../interfaces/Auth";
 import { AuthProvider } from "../interfaces/Auth";
 import type {
@@ -58,6 +57,10 @@ export class Auth {
     redirectUri: string;
     scope?: string;
   }): Promise<void> {
+    if (await this.isLoggedIn()) {
+      return;
+    }
+
     const { clientId } =
       await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
         "getSocialLoginClientId",
@@ -89,7 +92,10 @@ export class Auth {
   }: {
     provider: AuthProvider.GOOGLE;
     redirectUri: string;
-  }): Promise<AuthStoredTokenReturnType> {
+  }): Promise<AuthStoredTokenReturnType | undefined> {
+    if (await this.isLoggedIn()) {
+      return;
+    }
     if (provider === AuthProvider.GOOGLE) {
       // Get the authorization code from the URL query string
       // Make a call to the iframe with the authorization code
@@ -116,20 +122,22 @@ export class Auth {
     props?: {
       email?: string;
     } & ModalInterface
-  ): Promise<StoredTokenType | Boolean> {
-    const isLoggedIn = await this.isLoggedIn();
+  ): Promise<AuthStoredTokenReturnType | undefined> {
+    if (await this.isLoggedIn()) {
+      return;
+    }
 
-    return (
-      isLoggedIn ||
-      openModalForFunction<{ emailOTP: { email?: string } }, StoredTokenType>({
-        clientId: this.clientId,
-        path: EMBEDDED_WALLET_OTP_PATH,
-        procedure: "emailOTP",
-        params: { email: props?.email },
-        modalContainer: props?.modalContainer,
-        modalStyles: props?.modalStyles,
-      })
-    );
+    return openModalForFunction<
+      { emailOTP: { email?: string } },
+      AuthStoredTokenReturnType
+    >({
+      clientId: this.clientId,
+      path: EMBEDDED_WALLET_OTP_PATH,
+      procedure: "emailOTP",
+      params: { email: props?.email },
+      modalContainer: props?.modalContainer,
+      modalStyles: props?.modalStyles,
+    });
   }
 
   /**
@@ -144,7 +152,10 @@ export class Auth {
   }: {
     token: string;
     provider: AuthProvider;
-  }): Promise<AuthStoredTokenReturnType> {
+  }): Promise<AuthStoredTokenReturnType | undefined> {
+    if (await this.isLoggedIn()) {
+      return;
+    }
     return this.AuthQuerier.call<AuthStoredTokenReturnType>(
       "loginWithJwtAuthCallback",
       {

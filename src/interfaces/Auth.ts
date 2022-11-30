@@ -1,5 +1,5 @@
 export enum AuthProvider {
-  EMAIL = "Email",
+  PAPER_EMAIL_OTP = "Paper_Email_OTP",
   GOOGLE = "Google",
   AUTH0 = "Auth0",
   CUSTOM_JWT = "CustomJWT",
