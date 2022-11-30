@@ -29,6 +29,7 @@ export type AuthTypes = {
   };
   isLoggedIn: void;
   logout: void;
+  getAuthDetails: void;
 };
 
 export class Auth {
@@ -177,7 +178,11 @@ export class Auth {
    * Returns information associated with user that is currently authenticated
    * @returns {Object | undefined} An object containing the email if it exists
    */
-  async getDetails(): Promise<GetAuthDetailsReturnType | undefined> {
-    return { email: "" };
+  async getDetails(): Promise<
+    GetAuthDetailsReturnType["authDetails"] | undefined
+  > {
+    const { authDetails } =
+      await this.AuthQuerier.call<GetAuthDetailsReturnType>("getAuthDetails");
+    return authDetails;
   }
 }

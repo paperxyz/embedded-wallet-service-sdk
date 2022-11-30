@@ -23,4 +23,4 @@ export type HasWalletReturnType = { hasWallet: boolean };
 export type IsNewDeviceReturnType = { isNewDevice: boolean };
 export type IsLoggedInReturnType = { isUserLoggedIn: boolean };
 export type LogoutReturnType = { success: boolean };
-export type GetAuthDetailsReturnType = { email: string };
+export type GetAuthDetailsReturnType = { authDetails?: { email?: string } };
