@@ -111,24 +111,22 @@ export class Auth {
     throw new Error("Social login provider not recognized.");
   }
 
-  async loginWithOTP({
-    email,
-    modalContainer,
-    modalStyles,
-  }: {
-    email: string;
-  } & ModalInterface): Promise<StoredTokenType | Boolean> {
+  async loginWithOTP(
+    props?: {
+      email?: string;
+    } & ModalInterface
+  ): Promise<StoredTokenType | Boolean> {
     const isLoggedIn = await this.isLoggedIn();
 
     return (
       isLoggedIn ||
-      openModalForFunction<{ emailOTP: { email: string } }, StoredTokenType>({
+      openModalForFunction<{ emailOTP: { email?: string } }, StoredTokenType>({
         clientId: this.clientId,
         path: EMBEDDED_WALLET_OTP_PATH,
         procedure: "emailOTP",
-        params: { email },
-        modalContainer,
-        modalStyles,
+        params: { email: props?.email },
+        modalContainer: props?.modalContainer,
+        modalStyles: props?.modalStyles,
       })
     );
   }
