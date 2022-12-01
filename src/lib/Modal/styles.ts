@@ -32,9 +32,9 @@ export const getDefaultModalStyles = (): ModalStyles => ({
     maxWidth: "600px",
     width: "100%",
     animation: "pew-modal-slideIn 0.2s forwards",
-    height: "350px",
+    height: "375px",
     maxHeight: "80vh",
-    overflow: "auto",
+    overflow: "hidden",
   },
   iframe: {
     height: "100%",
