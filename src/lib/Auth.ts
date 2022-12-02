@@ -77,7 +77,7 @@ export class Auth {
       return;
     }
 
-    throw new Error("Social login provider not recongized.");
+    throw new Error("Social login provider not recognized.");
   }
 
   /**
