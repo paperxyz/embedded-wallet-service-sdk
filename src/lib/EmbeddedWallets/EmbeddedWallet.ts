@@ -96,30 +96,32 @@ export class EmbeddedWallet {
    */
   private async createWallet(
     props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType> {
-    let walletAddress: string;
+  ): Promise<SetUpWalletReturnType | undefined> {
+    let walletAddress: string | undefined;
     if (props.showUi) {
-      ({ walletAddress } = await openModalForFunction<
-        // functions that we can call on the iframe located at path
-        WalletManagementUiTypes,
-        // the return type of the iframe
-        WalletAddressObject
-        // takes one more type for the expected return type
-        // use in conjunction with processResult to get the proper return type shape
-      >({
-        modalStyles: {
-          body: {
-            backgroundColor: props.colorBackground,
+      walletAddress = (
+        await openModalForFunction<
+          // functions that we can call on the iframe located at path
+          WalletManagementUiTypes,
+          // the return type of the iframe
+          WalletAddressObject
+          // takes one more type for the expected return type
+          // use in conjunction with processResult to get the proper return type shape
+        >({
+          modalStyles: {
+            body: {
+              backgroundColor: props.colorBackground,
+            },
           },
-        },
-        clientId: this.clientId,
-        path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
-        procedure: "createWallet",
-        params: undefined,
-        customizationOptions: {
-          ...props,
-        },
-      }));
+          clientId: this.clientId,
+          path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
+          procedure: "createWallet",
+          params: undefined,
+          customizationOptions: {
+            ...props,
+          },
+        })
+      )?.walletAddress;
     } else {
       ({ walletAddress } =
         await this.walletManagerQuerier.call<WalletAddressObject>(
@@ -129,6 +131,10 @@ export class EmbeddedWallet {
           }
         ));
     }
+    if (!walletAddress) {
+      return;
+    }
+
     return { walletAddress, walletSetUp: WalletSetUp.NewWallet };
   }
 
@@ -139,26 +145,28 @@ export class EmbeddedWallet {
    */
   private async setUpNewDevice(
     props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType> {
-    let walletAddress: string;
+  ): Promise<SetUpWalletReturnType | undefined> {
+    let walletAddress: string | undefined;
     if (props.showUi) {
-      ({ walletAddress } = await openModalForFunction<
-        WalletManagementUiTypes,
-        WalletAddressObject
-      >({
-        modalStyles: {
-          body: {
-            backgroundColor: props.colorBackground,
+      walletAddress = (
+        await openModalForFunction<
+          WalletManagementUiTypes,
+          WalletAddressObject
+        >({
+          modalStyles: {
+            body: {
+              backgroundColor: props.colorBackground,
+            },
           },
-        },
-        clientId: this.clientId,
-        path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
-        procedure: "setUpNewDevice",
-        params: undefined,
-        customizationOptions: {
-          ...props,
-        },
-      }));
+          clientId: this.clientId,
+          path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
+          procedure: "setUpNewDevice",
+          params: undefined,
+          customizationOptions: {
+            ...props,
+          },
+        })
+      )?.walletAddress;
     } else {
       ({ walletAddress } =
         await this.walletManagerQuerier.call<WalletAddressObject>(
@@ -168,6 +176,11 @@ export class EmbeddedWallet {
           }
         ));
     }
+
+    if (!walletAddress) {
+      return;
+    }
+
     return { walletAddress, walletSetUp: WalletSetUp.NewDevice };
   }
 
