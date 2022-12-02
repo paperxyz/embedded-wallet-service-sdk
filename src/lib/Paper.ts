@@ -78,4 +78,17 @@ export class PaperClient {
     }
     return;
   }
+
+  async getUserStatus(): Promise<{
+    isLoggedIn: boolean;
+    wallet: { isOnNewDevice: boolean; isCreated: boolean };
+  }> {
+    return {
+      isLoggedIn: await this.Auth.isLoggedIn(),
+      wallet: {
+        isOnNewDevice: await this.wallet.isNewDevice(),
+        isCreated: await this.wallet.hasWallet(),
+      },
+    };
+  }
 }
