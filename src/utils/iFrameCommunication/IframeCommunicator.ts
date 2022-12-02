@@ -37,7 +37,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         iframe = document.createElement("iframe");
         const mergedIframeStyles = {
           ...getDefaultModalStyles().iframe,
-          iframeStyles,
+          ...iframeStyles,
         };
         Object.assign(iframe.style, mergedIframeStyles);
         iframe.setAttribute("id", iframeId);
