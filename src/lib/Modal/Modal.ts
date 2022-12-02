@@ -7,6 +7,8 @@ import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunica
 import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
 import { getDefaultModalStyles, modalKeyframeAnimations } from "./styles";
+
+export const MODAL_ID = "pew-modal";
 export class Modal {
   protected container: HTMLElement;
   protected main: HTMLDivElement;
@@ -26,6 +28,8 @@ export class Modal {
     }
 
     this.main = document.createElement("div");
+    this.main.id = MODAL_ID;
+
     this.overlay = document.createElement("div");
     this.body = document.createElement("div");
     this.iframe = document.createElement("iframe");
@@ -143,7 +147,9 @@ export async function openModalForFunction<
     processResult?: (props: IframeReturnType) => ReturnType;
     customizationOptions?: CustomizationOptionsType;
   }
-): Promise<ReturnType | IframeReturnType> {
+): Promise<ReturnType | IframeReturnType | undefined> {
+  if (!canOpenModal()) return;
+
   const modal = new Modal(props.modalContainer, props.modalStyles);
   const uiIframeManager =
     new EmbeddedWalletUiIframeCommunicator<ProcedureTypes>({
@@ -179,3 +185,7 @@ export async function openModalForFunction<
     throw e;
   }
 }
+
+export const canOpenModal = () => {
+  return !document.getElementById(MODAL_ID);
+};
