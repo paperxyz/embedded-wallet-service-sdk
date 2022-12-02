@@ -12,7 +12,7 @@ export class PaperClient {
   /**
    * Used to manage the Auth state of the user
    */
-  Auth: Auth;
+  auth: Auth;
 
   /**
    * @example
@@ -23,7 +23,7 @@ export class PaperClient {
    */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
-    this.Auth = new Auth({ clientId });
+    this.auth = new Auth({ clientId });
     this.wallet = new EmbeddedWallet({
       clientId,
       chain,
@@ -59,13 +59,13 @@ export class PaperClient {
       } & Partial<Omit<SetUpWalletReturnType, "walletAddress">>)
     | undefined
   > {
-    if (await this.Auth.isLoggedIn()) {
+    if (await this.auth.isLoggedIn()) {
       const result = await this.wallet.initWallet();
       if (result) {
         return {
           ...result,
           wallet: this.wallet,
-          emailAddress: (await this.Auth.getDetails())?.email,
+          emailAddress: (await this.auth.getDetails())?.email,
         };
       }
       return {
@@ -73,18 +73,33 @@ export class PaperClient {
         walletAddress: await (
           await this.wallet.getEtherJsSigner()
         ).getAddress(),
-        emailAddress: (await this.Auth.getDetails())?.email,
+        emailAddress: (await this.auth.getDetails())?.email,
       };
     }
     return;
   }
 
+  /**
+   * Gets the various status states of the user
+   * @example
+   * const status = await Paper.getUserStatus()
+   *
+   * // Can be remedied by calling the appropriate login method
+   * console.log('status.isLoggedIn', status.isLoggedIn)
+   *
+   * // For both of the cases below, calling `Paper.getUser()` will automatically remedy it
+   * // user does not have a wallet yet. They would need to set-up their wallet
+   * console.log('status.wallet.isCreated', status.wallet.isCreated)
+   * // User is on a new device, will be prompted for their password
+   * console.log('status.wallet.isOnNewDevice', status.wallet.isOnNewDevice)
+   * @returns an object to containing various information on the user statuses
+   */
   async getUserStatus(): Promise<{
     isLoggedIn: boolean;
     wallet: { isOnNewDevice: boolean; isCreated: boolean };
   }> {
     return {
-      isLoggedIn: await this.Auth.isLoggedIn(),
+      isLoggedIn: await this.auth.isLoggedIn(),
       wallet: {
         isOnNewDevice: await this.wallet.isNewDevice(),
         isCreated: await this.wallet.hasWallet(),
