@@ -4,11 +4,7 @@ import type {
   GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
 import { AuthProvider } from "../interfaces/Auth";
-import type {
-  GetAuthDetailsReturnType,
-  IsLoggedInReturnType,
-  LogoutReturnType,
-} from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import type { LogoutReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type { ModalInterface } from "../interfaces/Modal";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "./Modal/Modal";
@@ -26,9 +22,7 @@ export type AuthTypes = {
     code: string;
     redirectUri?: string;
   };
-  isLoggedIn: void;
   logout: void;
-  getAuthDetails: void;
 };
 
 export class Auth {
@@ -48,7 +42,7 @@ export class Auth {
    * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuthCallback} on that page to complete the login process. @TODO
    * @param {string | undefined} socialLoginParam.scope The scope that the login will provide access too.
    */
-  async loginWithSocialOAuth({
+  async initializeSocialOAuth({
     provider,
     redirectUri,
     scope,
@@ -57,10 +51,6 @@ export class Auth {
     redirectUri: string;
     scope?: string;
   }): Promise<void> {
-    if (await this.isLoggedIn()) {
-      return;
-    }
-
     const { clientId } =
       await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
         "getSocialLoginClientId",
@@ -86,16 +76,13 @@ export class Auth {
    * @param {string} socialLoginParam.redirectUri @TODO
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
-  async loginWithSocialOAuthCallback({
+  async loginWithSocialOAuth({
     provider,
     redirectUri,
   }: {
     provider: AuthProvider.GOOGLE;
     redirectUri: string;
-  }): Promise<AuthStoredTokenReturnType | undefined> {
-    if (await this.isLoggedIn()) {
-      return;
-    }
+  }): Promise<AuthStoredTokenReturnType> {
     if (provider === AuthProvider.GOOGLE) {
       // Get the authorization code from the URL query string
       // Make a call to the iframe with the authorization code
@@ -118,15 +105,11 @@ export class Auth {
     throw new Error("Social login provider not recognized.");
   }
 
-  async loginWithOTP(
+  async loginWithOtp(
     props?: {
       email?: string;
     } & ModalInterface
-  ): Promise<AuthStoredTokenReturnType | undefined> {
-    if (await this.isLoggedIn()) {
-      return;
-    }
-
+  ): Promise<AuthStoredTokenReturnType> {
     return openModalForFunction<
       { emailOTP: { email?: string } },
       AuthStoredTokenReturnType
@@ -146,16 +129,13 @@ export class Auth {
    * @param {AuthProvider} jwtParams.provider The Auth provider that is being used
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
-  async loginWithJwtAuthCallback({
+  async loginWithJwtAuth({
     token,
     provider,
   }: {
     token: string;
     provider: AuthProvider;
-  }): Promise<AuthStoredTokenReturnType | undefined> {
-    if (await this.isLoggedIn()) {
-      return;
-    }
+  }): Promise<AuthStoredTokenReturnType> {
     return this.AuthQuerier.call<AuthStoredTokenReturnType>(
       "loginWithJwtAuthCallback",
       {
@@ -166,16 +146,6 @@ export class Auth {
   }
 
   /**
-   * Checks to see if there is a user logged in and is able to access their wallet
-   * @returns {boolean} true if there is a user that is logged in. false otherwise
-   */
-  async isLoggedIn(): Promise<boolean> {
-    const { isUserLoggedIn } =
-      await this.AuthQuerier.call<IsLoggedInReturnType>("isLoggedIn");
-    return isUserLoggedIn;
-  }
-
-  /**
    * Logs any existing user out of their wallet.
    * @throws when something goes wrong logging user out
    * @returns {boolean} true if a user is successfully logged out. false if there's no user currently logged in.
@@ -183,17 +153,5 @@ export class Auth {
   async logout(): Promise<boolean> {
     const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
     return success;
-  }
-
-  /**
-   * Returns information associated with user that is currently authenticated
-   * @returns {Object | undefined} An object containing the email if it exists
-   */
-  async getDetails(): Promise<
-    GetAuthDetailsReturnType["authDetails"] | undefined
-  > {
-    const { authDetails } =
-      await this.AuthQuerier.call<GetAuthDetailsReturnType>("getAuthDetails");
-    return authDetails;
   }
 }

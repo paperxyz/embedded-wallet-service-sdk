@@ -147,8 +147,10 @@ export async function openModalForFunction<
     processResult?: (props: IframeReturnType) => ReturnType;
     customizationOptions?: CustomizationOptionsType;
   }
-): Promise<ReturnType | IframeReturnType | undefined> {
-  if (!canOpenModal()) return;
+): Promise<ReturnType | IframeReturnType> {
+  if (!canOpenModal()) {
+    throw new Error("A modal is already opened");
+  }
 
   const modal = new Modal(props.modalContainer, props.modalStyles);
   const uiIframeManager =
