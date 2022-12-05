@@ -7,6 +7,7 @@ import {
 } from "../../constants/settings";
 import {
   Chains,
+  GetUserStatusReturnType,
   GetUserStatusType,
   PaperConstructorWithStylesType,
   SetUpWalletReturnType,
@@ -16,6 +17,7 @@ import {
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "../Modal/Modal";
+import { PaperEmbeddedWalletSdk } from "../Paper";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
@@ -62,12 +64,20 @@ export class EmbeddedWallet {
   }
 
   /**
-   * Checks to see if user has set-up a wallet before.
-   * @throws if user is not logged in yet
-   * @returns {boolean} true if the user already has a wallet created. false otherwise
+   * @see {@link PaperEmbeddedWalletSdk.getUserStatus}
    */
   async getUserStatus(): Promise<GetUserStatusType> {
-    return this.walletManagerQuerier.call<GetUserStatusType>("getUserStatus");
+    const userStatus =
+      await this.walletManagerQuerier.call<GetUserStatusReturnType>(
+        "getUserStatus"
+      );
+    if (userStatus.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
+      return {
+        status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
+        data: { ...userStatus.data, wallet: this },
+      };
+    }
+    return userStatus;
   }
 
   /**
@@ -229,5 +239,9 @@ export class EmbeddedWallet {
       ),
     });
     return signer;
+  }
+
+  async getAddress() {
+    return (await this.getEthersJsSigner()).getAddress();
   }
 }

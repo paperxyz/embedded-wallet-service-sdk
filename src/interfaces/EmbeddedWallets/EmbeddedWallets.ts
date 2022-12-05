@@ -32,6 +32,25 @@ export type SetUpWalletReturnType = WalletAddressObject & {
 };
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
+
+// TODO: Maybe consolidate types
+export type GetUserStatusReturnType =
+  | {
+      status: UserStatus.LOGGED_OUT;
+      data: undefined;
+    }
+  | {
+      status: UserStatus.LOGGED_IN_WALLET_UNINITIALIZED;
+      data: { authDetails: AuthDetails };
+    }
+  | {
+      status: UserStatus.LOGGED_IN_NEW_DEVICE;
+      data: { authDetails: AuthDetails; walletAddress: string };
+    }
+  | {
+      status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
+      data: Omit<InitializedUser, "wallet">;
+    };
 export type GetUserStatusType =
   | {
       status: UserStatus.LOGGED_OUT;
