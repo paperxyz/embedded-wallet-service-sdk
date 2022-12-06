@@ -12,7 +12,7 @@ export class PaperEmbeddedWalletSdk {
 
   private wallet: EmbeddedWallet;
   /**
-   * Used to manage the Auth state of the user
+   * Used to manage the Auth state of the user.
    */
   auth: Auth;
 
@@ -36,21 +36,25 @@ export class PaperEmbeddedWalletSdk {
 
   /**
    * @description
-   * Sets-up the currently logged in user.
+   * Sets-up the currently logged in user with their wallet.
    *
-   * If User is logged out, this function does nothing.
+   * If User is logged out, this function does nothing and return undefined.
    *
    * If the user does not have a wallet or is on a new device, Paper automatically prompts them to set up a wallet or initialize their new device.
    * @example
-   * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" })
-   * const user = await Paper.initializeUser()
-   * // Accessing the user's wallet
-   * user.wallet
-   * // Accessing the user's wallet address
-   * user.walletAddress
-   * // Accessing the user's authentication details
-   * user.authDetails
-   *
+   *  const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" });
+   *  const user = await Paper.initializeUser();
+   *  if (!user) {
+   *    console.log("User is not logged in");
+   *    return;
+   *  } else {
+   *    // Accessing the user's wallet
+   *    user.wallet;
+   *    // Accessing the user's wallet address
+   *    user.walletAddress;
+   *    // Accessing the user's authentication details
+   *    user.authDetails;
+   *  }
    * @returns {InitializedUser | undefined} An object containing the user's authentication details, and the user wallet class. undefined if the user is logged out.
    */
   async initializeUser(): Promise<InitializedUser | undefined> {
@@ -78,32 +82,33 @@ export class PaperEmbeddedWalletSdk {
    * Gets the various status states of the user
    * @example
    *  const userStatus = await Paper.getUserStatus();
-      switch (userStatus.status) {
-      case UserStatus.LOGGED_OUT: {
-        // User is logged out, call one of the auth methods on Paper.auth to authenticate the user
-        break;
-      }
-      case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
-        // User is logged in, but does not have a wallet associated with it
-        // you also have access to the user's details
-        userStatus.data.authDetails;
-        break;
-      }
-      case UserStatus.LOGGED_IN_NEW_DEVICE: {
-        // User is logged in and created a wallet already, but is missing the device shard
-        // You have access to:
-        userStatus.data.authDetails;
-        userStatus.data.walletAddress;
-        break;
-      }
-      case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
-        // user is logged in and wallet is all set up.
-        // You have access to:
-        userStatus.data.authDetails;
-        userStatus.data.walletAddress;
-        userStatus.data.wallet;
-      }
-    }
+   *  switch (userStatus.status) {
+   *  case UserStatus.LOGGED_OUT: {
+   *    // User is logged out, call one of the auth methods on Paper.auth to authenticate the user
+   *    break;
+   *  }
+   *  case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
+   *    // User is logged in, but does not have a wallet associated with it
+   *    // you also have access to the user's details
+   *    userStatus.data.authDetails;
+   *    break;
+   *  }
+   *  case UserStatus.LOGGED_IN_NEW_DEVICE: {
+   *    // User is logged in and created a wallet already, but is missing the device shard
+   *    // You have access to:
+   *    userStatus.data.authDetails;
+   *    userStatus.data.walletAddress;
+   *    break;
+   *  }
+   *  case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
+   *    // user is logged in and wallet is all set up.
+   *    // You have access to:
+   *    userStatus.data.authDetails;
+   *    userStatus.data.walletAddress;
+   *    userStatus.data.wallet;
+   *    break;
+   *  }
+   *}
    * @returns an object to containing various information on the user statuses
    */
   async getUserStatus(): Promise<GetUserStatusType> {

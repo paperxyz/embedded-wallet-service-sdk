@@ -34,9 +34,16 @@ export class GaslessTransactionMaker {
     });
   }
   /**
+   * @description
    * Use to call arbitrary contracts on the blockchain
+   * 
+   * @param {string} params.contractAddress The address for which the contract call is directed too.
+   * @param {Array} params.methodInterface the function stub on the contract. Often this looks something like `function myFunctionName(address user, uint256 tokenId) external payable`.
+   * @param {Array} params.methodArgs The arguments that is to be passed to the contract in order.
+   * @throws if there is an error calling the contract for whatever reason.
+   * @returns {string} The transaction hash associated with the successful contract call.
    */
-  async contract({
+  async callContract({
     contractAddress,
     methodArgs,
     methodInterface,

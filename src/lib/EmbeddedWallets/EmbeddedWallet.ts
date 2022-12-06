@@ -17,7 +17,6 @@ import {
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "../Modal/Modal";
-import { PaperEmbeddedWalletSdk } from "../Paper";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
@@ -43,10 +42,10 @@ export class EmbeddedWallet {
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
   protected styles: CustomizationOptionsType | undefined;
 
-  public writeTo: GaslessTransactionMaker;
+  public gasless: GaslessTransactionMaker;
 
   /**
-   * Not meant to be initialized directly. Call {@link PaperEmbeddedWalletSdk.initializeUser} to get an instance
+   * Not meant to be initialized directly. Call {@link .initializeUser} to get an instance
    * @param param0
    */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
@@ -57,7 +56,7 @@ export class EmbeddedWallet {
       clientId,
     });
 
-    this.writeTo = new GaslessTransactionMaker({
+    this.gasless = new GaslessTransactionMaker({
       chain,
       clientId,
     });
@@ -227,6 +226,7 @@ export class EmbeddedWallet {
    * // returns a signer that is on the ethereum mainnet
    * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"})
    * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
+   * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
    * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperEmbeddedWalletSdk} instance
    */
   async getEthersJsSigner(network?: {
@@ -243,6 +243,7 @@ export class EmbeddedWallet {
 
   /**
    * Convenience function to get the user's wallet address
+   * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
    * @returns {string} the wallet address of the user
    */
   async getAddress() {
