@@ -1,11 +1,13 @@
 import type {
+  GetUserStatusType,
+  InitializedUser,
   PaperConstructorWithStylesType,
-  SetUpWalletReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { UserStatus } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { Auth } from "./Auth";
 import { EmbeddedWallet } from "./EmbeddedWallets/EmbeddedWallet";
 
-export class PaperClient {
+export class PaperEmbeddedWalletSdk {
   protected clientId: string;
 
   private wallet: EmbeddedWallet;
@@ -16,7 +18,7 @@ export class PaperClient {
 
   /**
    * @example
-   * const Paper = new PaperClient({ clientId: "", chain: "Goerli" })
+   * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" })
    * @param {string} initParams.clientId the clientId found on the {@link https://paper.xyz/dashboard/developers developer's dashboard}
    * @param {Chains} initParams.chain sets the default chain that the EmbeddedWallet will live on.
    * @param {CustomizationOptionsType} initParams.styles sets the default style override for any modal that pops up asking for user's details when creating wallet or logging in.
@@ -24,6 +26,7 @@ export class PaperClient {
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
     this.auth = new Auth({ clientId });
+
     this.wallet = new EmbeddedWallet({
       clientId,
       chain,
@@ -37,73 +40,70 @@ export class PaperClient {
    *
    * If the user does not have a wallet or is on a new device, Paper automatically prompts them to set up a wallet or initialize their new device
    * @example
-   * const Paper = new PaperClient({ clientId: "", chain: "Goerli" })
-   * const user = await Paper.getUser()
-   * if (user.walletSetUp === WalletSetUp.NewWallet) {
-   *  // new wallet initialized
-   *  console.log('user.walletAddress', user.walletAddress)
-   * } else if (user.walletSetUp === WalletSetUp.NewDevice) {
-   *  // user logged in on a new device or cookies was cleared on an existing device
-   *  console.log('user.walletAddress', user.walletAddress)
-   * }
+   * const Paper = new initializeUser({ clientId: "", chain: "Goerli" })
+   * const user = await Paper.initializeUser()
    * // Accessing the user's wallet
    * user.wallet
+   * // Accessing the user's wallet address
+   * // Accessing the user's authentication details
+   * user.authDetails
    *
    * @returns {({ User: EmbeddedWallet } & Partial<SetUpWalletReturnType>) | undefined} An object containing information about the user if there is a user logged into the system. undefined otherwise.
    */
-  async getUser(): Promise<
-    | ({
-        wallet: EmbeddedWallet;
-        emailAddress?: string;
-        walletAddress: string;
-      } & Partial<Omit<SetUpWalletReturnType, "walletAddress">>)
-    | undefined
-  > {
-    if (await this.auth.isLoggedIn()) {
-      const result = await this.wallet.initWallet();
-      if (result) {
-        return {
-          ...result,
-          wallet: this.wallet,
-          emailAddress: (await this.auth.getDetails())?.email,
-        };
+  async initializeUser(): Promise<InitializedUser | undefined> {
+    const userStatus = await this.wallet.getUserStatus();
+    switch (userStatus.status) {
+      case UserStatus.LOGGED_OUT: {
+        return;
       }
-      return {
-        wallet: this.wallet,
-        walletAddress: await (
-          await this.wallet.getEtherJsSigner()
-        ).getAddress(),
-        emailAddress: (await this.auth.getDetails())?.email,
-      };
+      case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED:
+      case UserStatus.LOGGED_IN_NEW_DEVICE: {
+        await this.wallet.initializeWallet();
+        break;
+      }
+      case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
+      }
     }
-    return;
+    return {
+      authDetails: userStatus.data.authDetails,
+      wallet: this.wallet,
+      walletAddress: await (await this.wallet.getEthersJsSigner()).getAddress(),
+    };
   }
 
   /**
    * Gets the various status states of the user
    * @example
-   * const status = await Paper.getUserStatus()
-   *
-   * // Can be remedied by calling the appropriate login method
-   * console.log('status.isLoggedIn', status.isLoggedIn)
-   *
-   * // For both of the cases below, calling `Paper.getUser()` will automatically remedy it
-   * // user does not have a wallet yet. They would need to set-up their wallet
-   * console.log('status.wallet.isCreated', status.wallet.isCreated)
-   * // User is on a new device, will be prompted for their password
-   * console.log('status.wallet.isOnNewDevice', status.wallet.isOnNewDevice)
+   *  const userStatus = await Paper.getUserStatus();
+      switch (userStatus.status) {
+      case UserStatus.LOGGED_OUT: {
+        // User is logged out, call one of the auth methods on Paper.auth to authenticate the user
+        break;
+      }
+      case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
+        // User is logged in, but does not have a wallet associated with it
+        // you also have access to the user's details
+        userStatus.data.authDetails;
+        break;
+      }
+      case UserStatus.LOGGED_IN_NEW_DEVICE: {
+        // User is logged in and created a wallet already, but is missing the device shard
+        // You have access to:
+        userStatus.data.authDetails;
+        userStatus.data.walletAddress;
+        break;
+      }
+      case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
+        // user is logged in and wallet is all set up.
+        // You have access to:
+        userStatus.data.authDetails;
+        userStatus.data.walletAddress;
+        userStatus.data.wallet;
+      }
+    }
    * @returns an object to containing various information on the user statuses
    */
-  async getUserStatus(): Promise<{
-    isLoggedIn: boolean;
-    wallet: { isOnNewDevice: boolean; isCreated: boolean };
-  }> {
-    return {
-      isLoggedIn: await this.auth.isLoggedIn(),
-      wallet: {
-        isOnNewDevice: await this.wallet.isNewDevice(),
-        isCreated: await this.wallet.hasWallet(),
-      },
-    };
+  async getUserStatus(): Promise<GetUserStatusType> {
+    return this.wallet.getUserStatus();
   }
 }

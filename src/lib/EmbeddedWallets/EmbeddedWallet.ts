@@ -5,27 +5,26 @@ import {
   EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
   EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
 } from "../../constants/settings";
-import type {
+import {
   Chains,
-  HasWalletReturnType,
-  IsNewDeviceReturnType,
+  GetUserStatusReturnType,
+  GetUserStatusType,
   PaperConstructorWithStylesType,
   SetUpWalletReturnType,
+  UserStatus,
   WalletAddressObject,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { WalletSetUp } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "../Modal/Modal";
+import { PaperEmbeddedWalletSdk } from "../Paper";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
 export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
   setUpNewDevice: { recoveryPassword: string };
-  hasWallet: void;
-  isNewDevice: void;
-  isLoggedIn: void;
+  getUserStatus: void;
 };
 export type WalletManagementUiTypes = {
   createWallet: void;
@@ -47,7 +46,7 @@ export class EmbeddedWallet {
   public writeTo: GaslessTransactionMaker;
 
   /**
-   * Not meant to be initialized directly. Call {@link PaperClient.getUser} to get an instance
+   * Not meant to be initialized directly. Call {@link PaperEmbeddedWalletSdk.initializeUser} to get an instance
    * @param param0
    */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
@@ -65,26 +64,20 @@ export class EmbeddedWallet {
   }
 
   /**
-   * Checks to see if user has set-up a wallet before.
-   * @throws if user is not logged in yet
-   * @returns {boolean} true if the user already has a wallet created. false otherwise
+   * @see {@link PaperEmbeddedWalletSdk.getUserStatus}
    */
-  async hasWallet(): Promise<boolean> {
-    const { hasWallet } =
-      await this.walletManagerQuerier.call<HasWalletReturnType>("hasWallet");
-    return hasWallet;
-  }
-
-  /**
-   * Checks to see if the users is on a new device
-   * @returns {boolean} true if the user is on a new device. false otherwise. Note that users who do not have a wallet will also be considered as on a new device
-   */
-  async isNewDevice(): Promise<boolean> {
-    const { isNewDevice } =
-      await this.walletManagerQuerier.call<IsNewDeviceReturnType>(
-        "isNewDevice"
+  async getUserStatus(): Promise<GetUserStatusType> {
+    const userStatus =
+      await this.walletManagerQuerier.call<GetUserStatusReturnType>(
+        "getUserStatus"
       );
-    return isNewDevice;
+    if (userStatus.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
+      return {
+        status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
+        data: { ...userStatus.data, wallet: this },
+      };
+    }
+    return userStatus;
   }
 
   /**
@@ -135,7 +128,10 @@ export class EmbeddedWallet {
       return;
     }
 
-    return { walletAddress, walletSetUp: WalletSetUp.NewWallet };
+    return {
+      walletAddress,
+      initialUserStatus: UserStatus.LOGGED_IN_WALLET_UNINITIALIZED,
+    };
   }
 
   /**
@@ -181,27 +177,42 @@ export class EmbeddedWallet {
       return;
     }
 
-    return { walletAddress, walletSetUp: WalletSetUp.NewDevice };
+    return {
+      walletAddress,
+      initialUserStatus: UserStatus.LOGGED_IN_NEW_DEVICE,
+    };
   }
 
   /**
-   * Use to initialize the wallet of the logged in user.
+   * Use to initialize the wallet of the user.
    * Note that you don't have to call this directly.
-   * This is called under the hood when you call {@link PaperClient.getUser}
-   * @returns the wallet address of the logged in user.
+   * This is called under the hood when you call {@link PaperEmbeddedWalletSdk.initializeUser}
+   * @returns {{walletAddress: string, userInitialStatus: UserStatus}} an object containing the walletAddress and the initialUserStatus (before calling initializeWallet) of the logged in user. undefined if user is logged out.
    */
-  async initWallet(): Promise<SetUpWalletReturnType | undefined> {
-    if (!(await this.hasWallet())) {
-      return this.createWallet({
-        showUi: true,
-        ...this.styles,
-      });
-    }
-    if (await this.isNewDevice()) {
-      return this.setUpNewDevice({
-        showUi: true,
-        ...this.styles,
-      });
+  async initializeWallet(): Promise<SetUpWalletReturnType | undefined> {
+    const { status, data } = await this.getUserStatus();
+    switch (status) {
+      case UserStatus.LOGGED_IN_NEW_DEVICE: {
+        return this.setUpNewDevice({
+          showUi: true,
+          ...this.styles,
+        });
+      }
+      case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
+        return this.createWallet({
+          showUi: true,
+          ...this.styles,
+        });
+      }
+      case UserStatus.LOGGED_OUT: {
+        return;
+      }
+      case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
+        return {
+          initialUserStatus: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
+          walletAddress: data.walletAddress,
+        };
+      }
     }
     return;
   }
@@ -209,16 +220,16 @@ export class EmbeddedWallet {
   /**
    * Returns an Ether.Js compatible signer that you can use in conjunction with the rest of dApp
    * @example
-   * const Paper = new PaperClient({clientId: "", chain: "Polygon"})
-   * const user = await Paper.getUser();
+   * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
+   * const user = await Paper.initializeUser();
    * // returns a signer on the Polygon mainnet
-   * const signer = await user.getEtherJsSigner()
+   * const signer = await user.getEthersJsSigner()
    * // returns a signer that is on the ethereum mainnet
-   * const signer = await user.getEtherJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"})
+   * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"})
    * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
-   * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperClient} instance
+   * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperEmbeddedWalletSdk} instance
    */
-  async getEtherJsSigner(network?: {
+  async getEthersJsSigner(network?: {
     rpcEndpoint: Networkish;
   }): Promise<EthersSigner> {
     const signer = new EthersSigner({
@@ -228,5 +239,9 @@ export class EmbeddedWallet {
       ),
     });
     return signer;
+  }
+
+  async getAddress() {
+    return (await this.getEthersJsSigner()).getAddress();
   }
 }
