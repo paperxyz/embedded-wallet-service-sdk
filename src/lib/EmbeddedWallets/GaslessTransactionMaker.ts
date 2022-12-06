@@ -9,7 +9,14 @@ import type {
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
 export type GaslessTransactionQuerierTypes = {
-  callContract: ContractCallInputType & { chain: Chains };
+  callContract: {
+    contractAddress: string;
+    method: {
+      stub: string;
+      args: Array<unknown>;
+    };
+    chain: Chains;
+  };
 };
 
 /**
@@ -31,14 +38,18 @@ export class GaslessTransactionMaker {
    */
   async contract({
     contractAddress,
-    method,
+    methodArgs,
+    methodInterface,
   }: ContractCallInputType): Promise<ContractCallReturnType> {
     return await this.gaslessTransactionQuerier.call<ContractCallReturnType>(
       "callContract",
       {
         chain: this.chain,
         contractAddress,
-        method,
+        method: {
+          args: methodArgs,
+          stub: methodInterface,
+        },
       }
     );
   }
