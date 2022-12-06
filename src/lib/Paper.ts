@@ -36,19 +36,22 @@ export class PaperEmbeddedWalletSdk {
 
   /**
    * @description
-   * Retrieves the currently logged in user's detail.
+   * Sets-up the currently logged in user.
    *
-   * If the user does not have a wallet or is on a new device, Paper automatically prompts them to set up a wallet or initialize their new device
+   * If User is logged out, this function does nothing.
+   *
+   * If the user does not have a wallet or is on a new device, Paper automatically prompts them to set up a wallet or initialize their new device.
    * @example
-   * const Paper = new initializeUser({ clientId: "", chain: "Goerli" })
+   * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" })
    * const user = await Paper.initializeUser()
    * // Accessing the user's wallet
    * user.wallet
    * // Accessing the user's wallet address
+   * user.walletAddress
    * // Accessing the user's authentication details
    * user.authDetails
    *
-   * @returns {({ User: EmbeddedWallet } & Partial<SetUpWalletReturnType>) | undefined} An object containing information about the user if there is a user logged into the system. undefined otherwise.
+   * @returns {InitializedUser | undefined} An object containing the user's authentication details, and the user wallet class. undefined if the user is logged out.
    */
   async initializeUser(): Promise<InitializedUser | undefined> {
     const userStatus = await this.wallet.getUserStatus();

@@ -39,7 +39,7 @@ export class Auth {
   /**
    * Used to initiate the Paper managed social login flow.
    * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
-   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuthCallback} on that page to complete the login process. @TODO
+   * @param {string} socialLoginParam.redirectUri The link to redirect too upon successful login. You would call {@link loginWithSocialOAuth} on that page to complete the login process.
    * @param {string | undefined} socialLoginParam.scope The scope that the login will provide access too.
    */
   async initializeSocialOAuth({
@@ -71,9 +71,9 @@ export class Auth {
   }
 
   /**
-   *
+   * Called on the social OAuth redirect Url page to complete the login
    * @param {AuthProvider} socialLoginParam.provider The name of the Paper managed authProvider that is to be invoked. Right now, only AuthProvider.GOOGLE is supported
-   * @param {string} socialLoginParam.redirectUri @TODO
+   * @param {string} socialLoginParam.redirectUri This is the same url as the one you set when you called {@link initializeSocialOAuth}
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
   async loginWithSocialOAuth({
@@ -105,6 +105,11 @@ export class Auth {
     throw new Error("Social login provider not recognized.");
   }
 
+  /**
+   * Used to login with OTP authentication.
+   * @param {string} props.email optional. If provided, we will send an email containing the OTP code directly to them and skip the requesting email page
+   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
+   */
   async loginWithOtp(
     props?: {
       email?: string;

@@ -64,23 +64,6 @@ export class EmbeddedWallet {
   }
 
   /**
-   * @see {@link PaperEmbeddedWalletSdk.getUserStatus}
-   */
-  async getUserStatus(): Promise<GetUserStatusType> {
-    const userStatus =
-      await this.walletManagerQuerier.call<GetUserStatusReturnType>(
-        "getUserStatus"
-      );
-    if (userStatus.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
-      return {
-        status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
-        data: { ...userStatus.data, wallet: this },
-      };
-    }
-    return userStatus;
-  }
-
-  /**
    * @private
    * @param props.showUi if false, recoveryPassword is needed
    * @param props.recoveryPassword Must follow good password practice. As of writing this:
@@ -184,10 +167,27 @@ export class EmbeddedWallet {
   }
 
   /**
+   * @see {@link PaperEmbeddedWalletSdk.getUserStatus}
+   */
+  async getUserStatus(): Promise<GetUserStatusType> {
+    const userStatus =
+      await this.walletManagerQuerier.call<GetUserStatusReturnType>(
+        "getUserStatus"
+      );
+    if (userStatus.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
+      return {
+        status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
+        data: { ...userStatus.data, wallet: this },
+      };
+    }
+    return userStatus;
+  }
+
+  /**
    * Use to initialize the wallet of the user.
    * Note that you don't have to call this directly.
    * This is called under the hood when you call {@link PaperEmbeddedWalletSdk.initializeUser}
-   * @returns {{walletAddress: string, userInitialStatus: UserStatus}} an object containing the walletAddress and the initialUserStatus (before calling initializeWallet) of the logged in user. undefined if user is logged out.
+   * @returns {{walletAddress: string, userInitialStatus: UserStatus}} an object containing the walletAddress and the initialUserStatus (user status before calling initializeWallet) of the logged in user. undefined if user is logged out.
    */
   async initializeWallet(): Promise<SetUpWalletReturnType | undefined> {
     const { status, data } = await this.getUserStatus();
@@ -218,7 +218,7 @@ export class EmbeddedWallet {
   }
 
   /**
-   * Returns an Ether.Js compatible signer that you can use in conjunction with the rest of dApp
+   * Returns an Ethers.Js compatible signer that you can use in conjunction with the rest of dApp
    * @example
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
    * const user = await Paper.initializeUser();
@@ -241,6 +241,10 @@ export class EmbeddedWallet {
     return signer;
   }
 
+  /**
+   * Convenience function to get the user's wallet address
+   * @returns {string} the wallet address of the user
+   */
   async getAddress() {
     return (await this.getEthersJsSigner()).getAddress();
   }
