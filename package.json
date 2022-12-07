@@ -21,9 +21,9 @@
   "author": "Paper.xyz <team@paper.xyz>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/paperxyz/embedded-wallet/issues"
+    "url": "https://github.com/paperxyz/embedded-wallet-sdk/issues"
   },
-  "homepage": "https://github.com/paperxyz/embedded-wallet",
+  "homepage": "https://github.com/paperxyz/embedded-wallet-sdk",
   "devDependencies": {
     "@types/node": "^18.7.11",
     "concurrently": "^7.3.0",
