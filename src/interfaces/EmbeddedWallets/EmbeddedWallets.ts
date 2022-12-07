@@ -24,10 +24,10 @@ export type InitializedUser = {
   authDetails: AuthDetails;
 };
 
-export type WalletAddressObject = {
+export type WalletAddressObjectType = {
   walletAddress: string;
 };
-export type SetUpWalletReturnType = WalletAddressObject & {
+export type SetUpWalletReturnType = WalletAddressObjectType & {
   initialUserStatus: UserStatus;
 };
 export type LogoutReturnType = { success: boolean };

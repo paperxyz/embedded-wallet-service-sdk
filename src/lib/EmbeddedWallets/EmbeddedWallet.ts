@@ -12,7 +12,7 @@ import {
   PaperConstructorWithStylesType,
   SetUpWalletReturnType,
   UserStatus,
-  WalletAddressObject,
+  WalletAddressObjectType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
@@ -79,7 +79,7 @@ export class EmbeddedWallet {
           // functions that we can call on the iframe located at path
           WalletManagementUiTypes,
           // the return type of the iframe
-          WalletAddressObject
+          WalletAddressObjectType
           // takes one more type for the expected return type
           // use in conjunction with processResult to get the proper return type shape
         >({
@@ -99,7 +99,7 @@ export class EmbeddedWallet {
       )?.walletAddress;
     } else {
       ({ walletAddress } =
-        await this.walletManagerQuerier.call<WalletAddressObject>(
+        await this.walletManagerQuerier.call<WalletAddressObjectType>(
           "createWallet",
           {
             recoveryPassword: props.recoveryPassword,
@@ -129,7 +129,7 @@ export class EmbeddedWallet {
       walletAddress = (
         await openModalForFunction<
           WalletManagementUiTypes,
-          WalletAddressObject
+          WalletAddressObjectType
         >({
           modalStyles: {
             body: {
@@ -147,7 +147,7 @@ export class EmbeddedWallet {
       )?.walletAddress;
     } else {
       ({ walletAddress } =
-        await this.walletManagerQuerier.call<WalletAddressObject>(
+        await this.walletManagerQuerier.call<WalletAddressObjectType>(
           "setUpNewDevice",
           {
             recoveryPassword: props.recoveryPassword,
