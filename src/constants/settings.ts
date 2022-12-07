@@ -16,7 +16,7 @@ export const PAPER_APP_URL_ALT =
     : process.env.NEXT_PUBLIC_NODE_ENV === "staging" &&
       typeof window !== "undefined"
     ? window.location.origin
-    : "https://papercheckout.com";
+    : "https://paper.xyz";
 
 export const EMBEDDED_WALLET_PATH = "/sdk/2022-08-12/embedded-wallet";
 export const EMBEDDED_WALLET_OTP_PATH = `${EMBEDDED_WALLET_PATH}/login-with-otp`;
