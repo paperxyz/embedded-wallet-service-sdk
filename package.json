@@ -1,6 +1,6 @@
 {
   "name": "@paperxyz/embedded-wallet-sdk",
-  "description": "Paper.xyz sdk for embedded wallets and Elements",
+  "description": "Paper.xyz sdk for embedded wallets",
   "version": "0.0.1",
   "files": [
     "dist/**/*"
@@ -21,9 +21,9 @@
   "author": "Paper.xyz <team@paper.xyz>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/paperxyz/js-client-sdk/issues"
+    "url": "https://github.com/paperxyz/embedded-wallet/issues"
   },
-  "homepage": "https://github.com/paperxyz/js-client-sdk",
+  "homepage": "https://github.com/paperxyz/embedded-wallet",
   "devDependencies": {
     "@types/node": "^18.7.11",
     "concurrently": "^7.3.0",
@@ -35,5 +35,9 @@
     "@ethersproject/bytes": "^5.7.0",
     "@ethersproject/properties": "^5.7.0",
     "@ethersproject/providers": "^5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paperxyz/embedded-wallet.git"
   }
 }

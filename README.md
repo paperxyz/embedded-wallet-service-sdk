@@ -5,7 +5,7 @@
 </p>
 <h1 align="center">Paper Embedded wallet SDK</h1>
 <p align="center">
-    <a href="https://www.npmjs.com/package/@paperxyz/js-client-sdk"><img src="https://img.shields.io/github/package-json/v/paperxyz/js-client-sdk?color=red&label=npm&logo=npm" alt="npm version"/></a>
+    <a href="https://www.npmjs.com/package/@paperxyz/embedded-wallet-sdk"><img src="https://img.shields.io//github/package-json/v/paperxyz/embedded-wallet-sdk?color=red&label=npm&logo=npm" alt="npm version"/></a>
     <a href="https://discord.gg/mnUa29J2Fp"><img alt="Join our Discord!" src="https://img.shields.io/discord/936354866358546453.svg?color=7289da&label=discord&logo=discord&style=flat"/></a>
 </p>
 
