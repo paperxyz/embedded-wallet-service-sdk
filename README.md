@@ -12,14 +12,14 @@
 [Paper](https://paper.xyz) is a developer-first NFT checkout solution that
 easily onboard users without wallets or cryptocurrencies.
 
-## [Documentation](#TODO)
+## [Documentation](https://docs.paper.xyz/docs/embedded-wallets-service-overview)
 
 ## Installation
 
 Install this SDK with `npm` or `yarn`:
 
 ```sh
-npm install @paperxyz/js-client-sdk
-yarn add @paperxyz/js-client-sdk
-pnpm add @paperxyz/js-client-sdk
+npm install @paperxyz/embedded-wallet-sdk
+yarn add @paperxyz/embedded-wallet-sdk
+pnpm add @paperxyz/embedded-wallet-sdk
 ```
