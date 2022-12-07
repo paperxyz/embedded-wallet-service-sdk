@@ -1,6 +1,6 @@
 import {
   EMBEDDED_WALLET_PATH,
-  PAPER_APP_URL_ALT,
+  PAPER_APP_URL
 } from "../../constants/settings";
 import { IframeCommunicator } from "./IframeCommunicator";
 
@@ -34,7 +34,7 @@ export function createEmbeddedWalletIframeLink({
   path: string;
   queryParams?: { [key: string]: string | number };
 }) {
-  const embeddedWalletUrl = new URL(path, PAPER_APP_URL_ALT);
+  const embeddedWalletUrl = new URL(path, PAPER_APP_URL);
   embeddedWalletUrl.searchParams.set("clientId", clientId);
   if (queryParams) {
     for (const queryKey of Object.keys(queryParams)) {
