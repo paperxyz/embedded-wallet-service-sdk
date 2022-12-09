@@ -38,6 +38,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paperxyz/embedded-wallet.git"
+    "url": "git+https://github.com/paperxyz/embedded-wallet-service-sdk.git"
   }
 }
