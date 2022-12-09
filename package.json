@@ -1,7 +1,7 @@
 {
-  "name": "@paperxyz/embedded-wallet-sdk",
+  "name": "@paperxyz/embedded-wallet-service-sdk",
   "description": "Paper.xyz sdk for embedded wallets",
-  "version": "0.0.7",
+  "version": "0.0.2",
   "files": [
     "dist/**/*"
   ],
@@ -21,9 +21,9 @@
   "author": "Paper.xyz <team@paper.xyz>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/paperxyz/embedded-wallet-sdk/issues"
+    "url": "https://github.com/paperxyz/embedded-wallet-service-sdk/issues"
   },
-  "homepage": "https://github.com/paperxyz/embedded-wallet-sdk",
+  "homepage": "https://github.com/paperxyz/embedded-wallet-service-sdk",
   "devDependencies": {
     "@types/node": "^18.7.11",
     "concurrently": "^7.3.0",

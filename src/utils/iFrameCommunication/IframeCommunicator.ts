@@ -57,8 +57,8 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     prePostMessageSleepInSeconds: number
   ) {
     return async () => {
-      const channel = new MessageChannel();
       const promise = new Promise<boolean>(async (res, rej) => {
+      const channel = new MessageChannel();
         channel.port1.onmessage = (event: MessageEvent<MessageType<void>>) => {
           const { data } = event;
           channel.port1.close();

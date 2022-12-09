@@ -3,9 +3,9 @@
     <a href="https://paper.xyz"><img src="./assets/paper-logo.svg" width="100" alt=""/></a>
     <br />
 </p>
-<h1 align="center">Paper Embedded wallet SDK</h1>
+<h1 align="center">Paper Embedded wallet Service SDK</h1>
 <p align="center">
-    <a href="https://www.npmjs.com/package/@paperxyz/embedded-wallet-sdk"><img src="https://img.shields.io/github/package-json/v/paperxyz/embedded-wallet-sdk?color=red&label=npm&logo=npm" alt="npm version"/></a>
+    <a href="https://www.npmjs.com/package/@paperxyz/embedded-wallet-service-sdk"><img src="https://img.shields.io/github/package-json/v/paperxyz/embedded-wallet-sdk?color=red&label=npm&logo=npm" alt="npm version"/></a>
     <a href="https://discord.gg/mnUa29J2Fp"><img alt="Join our Discord!" src="https://img.shields.io/discord/936354866358546453.svg?color=7289da&label=discord&logo=discord&style=flat"/></a>
 </p>
 
@@ -16,10 +16,35 @@ easily onboard users without wallets or cryptocurrencies.
 
 ## Installation
 
-Install this SDK with `npm` or `yarn`:
+Install this SDK:
 
-```sh
-npm install @paperxyz/embedded-wallet-sdk
-yarn add @paperxyz/embedded-wallet-sdk
-pnpm add @paperxyz/embedded-wallet-sdk
+```shell
+npm install @paperxyz/embedded-wallet-service-sdk
+yarn add @paperxyz/embedded-wallet-service-sdk
+pnpm add @paperxyz/embedded-wallet-service-sdk
+```
+
+Then get started right away:
+
+```js
+import { PaperEmbeddedWalletSdk } from "@paperxyz/embedded-wallet-service-sdk";
+
+// initialize the SDK
+const Paper = new PaperEmbeddedWalletSdk({
+  clientId: "YOUR_CLIENT_ID",
+  chain: "Mumbai",
+});
+
+// log the user in
+await Paper.auth.loginWithOtp();
+
+// create or recover the user's wallet if needed
+const user = await Paper.initializeUser();
+
+// Execute a transaction without the user wallet needing gas money
+const { transactionHash } = await user.wallet.gasless.callContract({
+  methodInterface: "function mintFreeNft(uint256 quantity) external",
+  methodArgs: [1],
+  contractAddress: "0x...",
+});
 ```
