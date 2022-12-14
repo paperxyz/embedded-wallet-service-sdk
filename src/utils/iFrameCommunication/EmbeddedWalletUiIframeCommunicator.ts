@@ -23,12 +23,14 @@ export class EmbeddedWalletUiIframeCommunicator<
     container,
     customizationOptions,
     iframeStyles = getDefaultModalStyles().iframe,
+    onIframeInitialize,
   }: {
     clientId: string;
     path: string;
     container: HTMLElement;
     iframeStyles?: StyleObject;
     customizationOptions?: CustomizationOptionsType;
+    onIframeInitialize?: () => void;
   }) {
     const queryParams = customizationOptions;
     super({
@@ -40,6 +42,7 @@ export class EmbeddedWalletUiIframeCommunicator<
       }).href,
       container,
       iframeStyles,
+      onIframeInitialize,
     });
     this.localStorageQuerier =
       new EmbeddedWalletIframeCommunicator<localStorageProcedureType>({

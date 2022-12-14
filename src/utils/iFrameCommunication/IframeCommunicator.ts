@@ -7,6 +7,7 @@ export type IFrameCommunicatorProps = {
   iframeId: string;
   container?: HTMLElement;
   iframeStyles?: StyleObject;
+  onIframeInitialize?: () => void;
 };
 
 function sleep(seconds: number) {
@@ -28,6 +29,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     iframeId,
     container = document.body,
     iframeStyles,
+    onIframeInitialize,
   }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
@@ -46,7 +48,8 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       iframe.src = link;
       iframe.onload = IframeCommunicator.onIframeLoadHandler(
         iframe,
-        this.POST_LOAD_BUFFER_SECONDS
+        this.POST_LOAD_BUFFER_SECONDS,
+        onIframeInitialize
       );
     }
     this.iframe = iframe;
@@ -54,11 +57,12 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
 
   static onIframeLoadHandler(
     iframe: HTMLIFrameElement,
-    prePostMessageSleepInSeconds: number
+    prePostMessageSleepInSeconds: number,
+    onIframeInitialize?: () => void
   ) {
     return async () => {
       const promise = new Promise<boolean>(async (res, rej) => {
-      const channel = new MessageChannel();
+        const channel = new MessageChannel();
         channel.port1.onmessage = (event: MessageEvent<MessageType<void>>) => {
           const { data } = event;
           channel.port1.close();
@@ -66,6 +70,9 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
             return rej(data.error);
           }
           isIframeLoaded.set(iframe.src, true);
+          if (onIframeInitialize) {
+            onIframeInitialize();
+          }
           return res(true);
         };
 

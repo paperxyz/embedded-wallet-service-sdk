@@ -11,6 +11,7 @@ export class Modal {
   protected main: HTMLDivElement;
   protected overlay: HTMLDivElement;
   protected iframe: HTMLIFrameElement;
+  protected closeButton: HTMLButtonElement | undefined;
 
   protected style: HTMLStyleElement;
   protected iframeCommunicator: IframeCommunicator<{}> | undefined;
@@ -60,6 +61,17 @@ export class Modal {
 
     this.container.appendChild(this.main);
     document.body.style.overflow = "hidden";
+  }
+
+  addCloseModalToggle(onCloseModal: () => void) {
+    this.closeButton = document.createElement("button");
+    this.closeButton.innerHTML = "X";
+    this.closeButton.onclick = onCloseModal;
+    this.closeButton.setAttribute(
+      "style",
+      "border:none;background:transparent;cursor:pointer;"
+    );
+    this.body.prepend(this.closeButton);
   }
 
   close() {
@@ -167,8 +179,15 @@ export async function openModalForFunction<
       container: modal.body,
       path: props.path,
       customizationOptions: props.customizationOptions,
+      onIframeInitialize: () => {
+        modal.addCloseModalToggle(async () => {
+          // TODO: remove type-hack
+          await uiIframeManager.call("closeModal", undefined as any);
+        });
+      },
     });
   modal.open({ communicator: uiIframeManager });
+
   try {
     const result = await uiIframeManager.call<IframeReturnType>(
       props.procedure,
