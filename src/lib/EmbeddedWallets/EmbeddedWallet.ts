@@ -11,6 +11,7 @@ import {
   GetUserStatusType,
   PaperConstructorWithStylesType,
   SetUpWalletReturnType,
+  SetUpWalletRpcReturnType,
   UserStatus,
   WalletAddressObjectType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
@@ -76,38 +77,31 @@ export class EmbeddedWallet {
     if (props.showUi) {
       walletAddress = (
         await openModalForFunction<
-          // functions that we can call on the iframe located at path
           WalletManagementUiTypes,
-          // the return type of the iframe
+          SetUpWalletRpcReturnType,
           WalletAddressObjectType
-          // takes one more type for the expected return type
-          // use in conjunction with processResult to get the proper return type shape
         >({
-          modalStyles: {
-            body: {
-              backgroundColor: props.colorBackground,
-            },
-          },
           clientId: this.clientId,
           path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
           procedure: "createWallet",
           params: undefined,
-          customizationOptions: {
-            ...props,
+          processResult: async (result, storage) => {
+            await storage.saveDeviceShare(result.deviceShareStored);
+            return {
+              walletAddress: result.walletAddress,
+            };
           },
+          customizationOptions: props,
         })
-      )?.walletAddress;
+      ).walletAddress;
     } else {
       ({ walletAddress } =
-        await this.walletManagerQuerier.call<WalletAddressObjectType>(
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
           "createWallet",
           {
             recoveryPassword: props.recoveryPassword,
           }
         ));
-    }
-    if (!walletAddress) {
-      return;
     }
 
     return {
@@ -129,34 +123,30 @@ export class EmbeddedWallet {
       walletAddress = (
         await openModalForFunction<
           WalletManagementUiTypes,
+          SetUpWalletRpcReturnType,
           WalletAddressObjectType
         >({
-          modalStyles: {
-            body: {
-              backgroundColor: props.colorBackground,
-            },
-          },
           clientId: this.clientId,
           path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
           procedure: "setUpNewDevice",
           params: undefined,
-          customizationOptions: {
-            ...props,
+          processResult: async (result, storage) => {
+            await storage.saveDeviceShare(result.deviceShareStored);
+            return {
+              walletAddress: result.walletAddress,
+            };
           },
+          customizationOptions: props,
         })
-      )?.walletAddress;
+      ).walletAddress;
     } else {
       ({ walletAddress } =
-        await this.walletManagerQuerier.call<WalletAddressObjectType>(
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
           "setUpNewDevice",
           {
             recoveryPassword: props.recoveryPassword,
           }
         ));
-    }
-
-    if (!walletAddress) {
-      return;
     }
 
     return {
@@ -213,18 +203,36 @@ export class EmbeddedWallet {
         };
       }
     }
-    return;
+  }
+
+  /**
+   * @description
+   * Switches the chain that the user wallet is currently on.
+   * @example
+   * // user wallet will be set to Polygon
+   * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
+   * const user = await Paper.initializeUser();
+   * // user wallet is not on Mumbai
+   * await user.wallet.setChain({ chain: "Mumbai" });
+   * @param {Chains} params.chain The chain that we are changing the user wallet too
+   */
+  async setChain({ chain }: { chain: Chains }): Promise<void> {
+    this.chain = chain;
+    this.gasless = new GaslessTransactionMaker({
+      chain,
+      clientId: this.clientId,
+    });
   }
 
   /**
    * Returns an Ethers.Js compatible signer that you can use in conjunction with the rest of dApp
    * @example
-   * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
+   * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    * const user = await Paper.initializeUser();
    * // returns a signer on the Polygon mainnet
-   * const signer = await user.getEthersJsSigner()
+   * const signer = await user.getEthersJsSigner();
    * // returns a signer that is on the ethereum mainnet
-   * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"})
+   * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"});
    * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
    * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
    * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperEmbeddedWalletSdk} instance

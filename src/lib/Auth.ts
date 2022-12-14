@@ -1,24 +1,27 @@
 import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
-import type {
+import {
+  AuthProvider,
   AuthStoredTokenReturnType,
-  GetSocialLoginClientIdReturnType,
+  AuthStoredTokenWithCookieReturnType, GetSocialLoginClientIdReturnType
 } from "../interfaces/Auth";
-import { AuthProvider } from "../interfaces/Auth";
-import type { LogoutReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { ModalInterface } from "../interfaces/Modal";
+import type {
+  LogoutReturnType,
+  PaperConstructorWithStylesType
+} from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
     token: string;
-    provider: AuthProvider;
+    authProvider: AuthProvider;
   };
   getSocialLoginClientId: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
   };
   loginWithOAuthCode: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     code: string;
     redirectUri?: string;
   };
@@ -27,6 +30,7 @@ export type AuthTypes = {
 
 export class Auth {
   protected clientId: string;
+  protected styles: CustomizationOptionsType | undefined;
   protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthTypes>;
 
   /**
@@ -36,8 +40,12 @@ export class Auth {
    * Authentication settings can be managed via the [authentication settings dashboard](https://paper.xyz/dashboard/auth-settings)
    * @param {string} params.clientId the clientId associated with the various authentication settings
    */
-  constructor({ clientId }: { clientId: string }) {
+  constructor({
+    clientId,
+    styles,
+  }: Omit<PaperConstructorWithStylesType, "chain">) {
     this.clientId = clientId;
+    this.styles = styles;
     this.AuthQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
@@ -54,11 +62,11 @@ export class Auth {
    * @throws if attempting to use other unsupported auth providers
    */
   async initializeSocialOAuth({
-    provider,
+    authProvider,
     redirectUri,
     scope,
   }: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     redirectUri: string;
     scope?: string;
   }): Promise<void> {
@@ -66,11 +74,11 @@ export class Auth {
       await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
         "getSocialLoginClientId",
         {
-          provider,
+          authProvider,
         }
       );
 
-    if (provider === AuthProvider.GOOGLE) {
+    if (authProvider === AuthProvider.GOOGLE) {
       const scopeToUse = scope ? encodeURIComponent(scope) : "openid%20email";
       const redirectUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopeToUse}&response_type=code`;
       console.log(redirectUrl);
@@ -88,13 +96,13 @@ export class Auth {
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
   async loginWithSocialOAuth({
-    provider,
+    authProvider,
     redirectUri,
   }: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     redirectUri: string;
   }): Promise<AuthStoredTokenReturnType> {
-    if (provider === AuthProvider.GOOGLE) {
+    if (authProvider === AuthProvider.GOOGLE) {
       // Get the authorization code from the URL query string
       // Make a call to the iframe with the authorization code
       const urlParams = new URLSearchParams(window.location.search);
@@ -108,7 +116,7 @@ export class Auth {
         "loginWithOAuthCode",
         {
           code: authorizationCode,
-          provider,
+          authProvider,
           redirectUri,
         }
       );
@@ -135,21 +143,31 @@ export class Auth {
    * @throws if there is already a modal opened by this function or {@link PaperEmbeddedWalletSdk.initializeUser}
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
-  async loginWithOtp(
-    props?: {
-      email?: string;
-    } & ModalInterface
-  ): Promise<AuthStoredTokenReturnType> {
+  async loginWithOtp(props?: {
+    email?: string;
+  }): Promise<AuthStoredTokenReturnType> {
     return openModalForFunction<
       { emailOTP: { email?: string } },
+      AuthStoredTokenWithCookieReturnType,
       AuthStoredTokenReturnType
     >({
       clientId: this.clientId,
       path: EMBEDDED_WALLET_OTP_PATH,
       procedure: "emailOTP",
       params: { email: props?.email },
-      modalContainer: props?.modalContainer,
-      modalStyles: props?.modalStyles,
+      processResult: async (result, storage) => {
+        await storage.saveAuthCookie(
+          result.storedToken.cookieString
+        );
+        return {
+          storedToken: {
+            authProvider: result.storedToken.authProvider,
+            developerClientId: result.storedToken.developerClientId,
+            jwtToken: result.storedToken.jwtToken,
+          },
+        };
+      },
+      customizationOptions: this.styles,
     });
   }
 
@@ -164,16 +182,16 @@ export class Auth {
    */
   async loginWithJwtAuth({
     token,
-    provider,
+    authProvider,
   }: {
     token: string;
-    provider: AuthProvider;
+    authProvider: AuthProvider;
   }): Promise<AuthStoredTokenReturnType> {
     return this.AuthQuerier.call<AuthStoredTokenReturnType>(
       "loginWithJwtAuthCallback",
       {
         token,
-        provider,
+        authProvider,
       }
     );
   }

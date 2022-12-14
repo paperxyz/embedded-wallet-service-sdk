@@ -1,12 +1,22 @@
 import { StyleObject } from "../../interfaces/Modal";
 import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { getDefaultModalStyles } from "../../lib/Modal/styles";
-import { createEmbeddedWalletIframeLink } from "./EmbeddedWalletIframeCommunicator";
+import {
+  createEmbeddedWalletIframeLink,
+  EmbeddedWalletIframeCommunicator,
+} from "./EmbeddedWalletIframeCommunicator";
 import { IframeCommunicator } from "./IframeCommunicator";
+
+type localStorageProcedureType = {
+  saveAuthCookie: { cookie: string };
+  saveDeviceShare: { share: string };
+};
 
 export class EmbeddedWalletUiIframeCommunicator<
   T extends { [key: string]: any }
 > extends IframeCommunicator<T> {
+  protected localStorageQuerier: EmbeddedWalletIframeCommunicator<localStorageProcedureType>;
+
   constructor({
     clientId,
     path,
@@ -30,6 +40,21 @@ export class EmbeddedWalletUiIframeCommunicator<
       }).href,
       container,
       iframeStyles,
+    });
+    this.localStorageQuerier =
+      new EmbeddedWalletIframeCommunicator<localStorageProcedureType>({
+        clientId,
+      });
+  }
+
+  async saveAuthCookie(cookie: string): Promise<void> {
+    this.localStorageQuerier.call<void>("saveAuthCookie", {
+      cookie,
+    });
+  }
+  async saveDeviceShare(share: string): Promise<void> {
+    this.localStorageQuerier.call<void>("saveDeviceShare", {
+      share,
     });
   }
 }

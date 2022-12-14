@@ -18,14 +18,14 @@ export class PaperEmbeddedWalletSdk {
 
   /**
    * @example
-   * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" })
+   * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" });
    * @param {string} initParams.clientId the clientId found on the {@link https://paper.xyz/dashboard/developers developer's dashboard}
    * @param {Chains} initParams.chain sets the default chain that the EmbeddedWallet will live on.
    * @param {CustomizationOptionsType} initParams.styles sets the default style override for any modal that pops up asking for user's details when creating wallet or logging in.
    */
   constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
     this.clientId = clientId;
-    this.auth = new Auth({ clientId });
+    this.auth = new Auth({ clientId, styles });
 
     this.wallet = new EmbeddedWallet({
       clientId,
