@@ -30,6 +30,10 @@ export type WalletAddressObjectType = {
 export type SetUpWalletReturnType = WalletAddressObjectType & {
   initialUserStatus: UserStatus;
 };
+export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
+  deviceShareStored: string;
+};
+
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 

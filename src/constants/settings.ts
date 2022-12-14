@@ -9,15 +9,6 @@ export const PAPER_APP_URL =
     ? window.location.origin
     : "https://paper.xyz";
 
-export const PAPER_APP_URL_ALT =
-  process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : process.env.NEXT_PUBLIC_NODE_ENV === "staging" &&
-      typeof window !== "undefined"
-    ? window.location.origin
-    : "https://papercheckout.com";
-
 export const EMBEDDED_WALLET_PATH = "/sdk/2022-08-12/embedded-wallet";
 export const EMBEDDED_WALLET_OTP_PATH = `${EMBEDDED_WALLET_PATH}/login-with-otp`;
 export const EMBEDDED_WALLET_CREATE_WALLET_UI_PATH = `${EMBEDDED_WALLET_PATH}/create-new-wallet-ui`;
