@@ -2,14 +2,16 @@ import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
 import {
   AuthProvider,
   AuthStoredTokenReturnType,
-  AuthStoredTokenWithCookieReturnType, GetSocialLoginClientIdReturnType
+  AuthStoredTokenWithCookieReturnType,
+  GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
 import type {
   LogoutReturnType,
-  PaperConstructorWithStylesType
+  PaperConstructorWithStylesType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { LocalStorage } from "../utils/Storage/LocalStorage";
 import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
@@ -32,6 +34,7 @@ export class Auth {
   protected clientId: string;
   protected styles: CustomizationOptionsType | undefined;
   protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthTypes>;
+  protected localStorage: LocalStorage;
 
   /**
    * Used to manage the user's auth states. This should not be instantiated directly.
@@ -49,6 +52,20 @@ export class Auth {
     this.AuthQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
+    this.localStorage = new LocalStorage({ clientId });
+  }
+
+  private async postLogin({
+    storedToken,
+  }: AuthStoredTokenWithCookieReturnType): Promise<AuthStoredTokenReturnType> {
+    this.localStorage.saveAuthCookie(storedToken.cookieString);
+    return {
+      storedToken: {
+        authProvider: storedToken.authProvider,
+        developerClientId: storedToken.developerClientId,
+        jwtToken: storedToken.jwtToken,
+      },
+    };
   }
 
   /**
@@ -109,17 +126,19 @@ export class Auth {
       const authorizationCode = urlParams.get("code");
       if (!authorizationCode) {
         throw new Error(
-          "No authorization code found in the URL. Make sure to call this function in an authorized redirect_uri location that was set on your Google dashboard."
+          "No authorization code found in the URL. Make sure to call this function in an authorized redirect_uri location that wasS set on your Google dashboard."
         );
       }
-      return this.AuthQuerier.call<AuthStoredTokenReturnType>(
-        "loginWithOAuthCode",
-        {
-          code: authorizationCode,
-          authProvider,
-          redirectUri,
-        }
-      );
+      const storedToken =
+        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
+          "loginWithOAuthCode",
+          {
+            code: authorizationCode,
+            authProvider,
+            redirectUri,
+          }
+        );
+      return this.postLogin(storedToken);
     }
     throw new Error("Social login provider not recognized.");
   }
@@ -155,17 +174,8 @@ export class Auth {
       path: EMBEDDED_WALLET_OTP_PATH,
       procedure: "emailOTP",
       params: { email: props?.email },
-      processResult: async (result, storage) => {
-        await storage.saveAuthCookie(
-          result.storedToken.cookieString
-        );
-        return {
-          storedToken: {
-            authProvider: result.storedToken.authProvider,
-            developerClientId: result.storedToken.developerClientId,
-            jwtToken: result.storedToken.jwtToken,
-          },
-        };
+      processResult: async (result) => {
+        return this.postLogin(result);
       },
       customizationOptions: this.styles,
     });
@@ -187,13 +197,15 @@ export class Auth {
     token: string;
     authProvider: AuthProvider;
   }): Promise<AuthStoredTokenReturnType> {
-    return this.AuthQuerier.call<AuthStoredTokenReturnType>(
-      "loginWithJwtAuthCallback",
-      {
-        token,
-        authProvider,
-      }
-    );
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
+        "loginWithJwtAuthCallback",
+        {
+          token,
+          authProvider,
+        }
+      );
+    return this.postLogin(result);
   }
 
   /**
