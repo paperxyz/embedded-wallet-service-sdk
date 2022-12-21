@@ -26,7 +26,7 @@ export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
   setUpNewDevice: { recoveryPassword: string };
   getUserStatus: void;
-  postWalletSetUp: { deviceShareStored: string };
+  saveDeviceShare: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
   createWallet: void;
@@ -73,7 +73,7 @@ export class EmbeddedWallet {
     walletAddress,
   }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
     this.localStorage.saveAuthCookie(deviceShareStored);
-    await this.walletManagerQuerier.call<void>("postWalletSetUp", {
+    await this.walletManagerQuerier.call<void>("saveDeviceShare", {
       deviceShareStored,
     });
     return { walletAddress };
