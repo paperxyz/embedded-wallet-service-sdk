@@ -158,10 +158,7 @@ export async function openModalForFunction<
   path: string;
   procedure: keyof ProcedureTypes;
   params: ProcedureTypes[keyof ProcedureTypes];
-  processResult?: (
-    props: IframeReturnType,
-    storage: EmbeddedWalletUiIframeCommunicator<ProcedureTypes>
-  ) => ReturnType | Promise<ReturnType>;
+  processResult?: (props: IframeReturnType) => ReturnType | Promise<ReturnType>;
   customizationOptions?: CustomizationOptionsType;
 }): Promise<ReturnType | IframeReturnType> {
   if (!canOpenModal()) {
@@ -195,7 +192,7 @@ export async function openModalForFunction<
     );
     modal.close();
     if (props.processResult) {
-      const toReturn = props.processResult(result, uiIframeManager);
+      const toReturn = props.processResult(result);
       return toReturn;
     }
     return result;

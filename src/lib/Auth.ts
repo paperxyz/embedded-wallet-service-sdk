@@ -27,6 +27,7 @@ export type AuthTypes = {
     code: string;
     redirectUri?: string;
   };
+  postLogin: { authCookie: string };
   logout: void;
 };
 
@@ -59,6 +60,9 @@ export class Auth {
     storedToken,
   }: AuthStoredTokenWithCookieReturnType): Promise<AuthStoredTokenReturnType> {
     this.localStorage.saveAuthCookie(storedToken.cookieString);
+    await this.AuthQuerier.call("postLogin", {
+      authCookie: storedToken.cookieString,
+    });
     return {
       storedToken: {
         authProvider: storedToken.authProvider,

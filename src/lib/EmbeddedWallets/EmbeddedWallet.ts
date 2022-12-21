@@ -17,6 +17,7 @@ import {
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { LocalStorage } from "../../utils/Storage/LocalStorage";
 import { openModalForFunction } from "../Modal/Modal";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
@@ -25,6 +26,7 @@ export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
   setUpNewDevice: { recoveryPassword: string };
   getUserStatus: void;
+  postWalletSetUp: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
   createWallet: void;
@@ -42,6 +44,7 @@ export class EmbeddedWallet {
   protected chain: Chains;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
   protected styles: CustomizationOptionsType | undefined;
+  protected localStorage: LocalStorage;
 
   public gasless: GaslessTransactionMaker;
 
@@ -61,6 +64,19 @@ export class EmbeddedWallet {
       chain,
       clientId,
     });
+
+    this.localStorage = new LocalStorage({ clientId });
+  }
+
+  private async postSetUpWallet({
+    deviceShareStored,
+    walletAddress,
+  }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
+    this.localStorage.saveAuthCookie(deviceShareStored);
+    await this.walletManagerQuerier.call<void>("postWalletSetUp", {
+      deviceShareStored,
+    });
+    return { walletAddress };
   }
 
   /**
@@ -73,39 +89,32 @@ export class EmbeddedWallet {
   private async createWallet(
     props: EmbeddedWalletInternalHelperType
   ): Promise<SetUpWalletReturnType | undefined> {
-    let walletAddress: string | undefined;
+    let newWalletDetails: SetUpWalletRpcReturnType;
     if (props.showUi) {
-      walletAddress = (
-        await openModalForFunction<
-          WalletManagementUiTypes,
-          SetUpWalletRpcReturnType,
-          WalletAddressObjectType
-        >({
-          clientId: this.clientId,
-          path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
-          procedure: "createWallet",
-          params: undefined,
-          processResult: async (result, storage) => {
-            await storage.saveDeviceShare(result.deviceShareStored);
-            return {
-              walletAddress: result.walletAddress,
-            };
-          },
-          customizationOptions: props,
-        })
-      ).walletAddress;
+      newWalletDetails = await openModalForFunction<
+        WalletManagementUiTypes,
+        SetUpWalletRpcReturnType
+      >({
+        clientId: this.clientId,
+        path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
+        procedure: "createWallet",
+        params: undefined,
+
+        customizationOptions: props,
+      });
     } else {
-      ({ walletAddress } =
+      newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
           "createWallet",
           {
             recoveryPassword: props.recoveryPassword,
           }
-        ));
+        );
     }
+    await this.postSetUpWallet(newWalletDetails);
 
     return {
-      walletAddress,
+      walletAddress: newWalletDetails.walletAddress,
       initialUserStatus: UserStatus.LOGGED_IN_WALLET_UNINITIALIZED,
     };
   }
@@ -118,39 +127,32 @@ export class EmbeddedWallet {
   private async setUpNewDevice(
     props: EmbeddedWalletInternalHelperType
   ): Promise<SetUpWalletReturnType | undefined> {
-    let walletAddress: string | undefined;
+    let newWalletDetails: SetUpWalletRpcReturnType;
     if (props.showUi) {
-      walletAddress = (
-        await openModalForFunction<
-          WalletManagementUiTypes,
-          SetUpWalletRpcReturnType,
-          WalletAddressObjectType
-        >({
-          clientId: this.clientId,
-          path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
-          procedure: "setUpNewDevice",
-          params: undefined,
-          processResult: async (result, storage) => {
-            await storage.saveDeviceShare(result.deviceShareStored);
-            return {
-              walletAddress: result.walletAddress,
-            };
-          },
-          customizationOptions: props,
-        })
-      ).walletAddress;
+      newWalletDetails = await openModalForFunction<
+        WalletManagementUiTypes,
+        SetUpWalletRpcReturnType
+      >({
+        clientId: this.clientId,
+        path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
+        procedure: "setUpNewDevice",
+        params: undefined,
+        customizationOptions: props,
+      });
     } else {
-      ({ walletAddress } =
+      newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
           "setUpNewDevice",
           {
             recoveryPassword: props.recoveryPassword,
           }
-        ));
+        );
     }
 
+    await this.postSetUpWallet(newWalletDetails);
+
     return {
-      walletAddress,
+      walletAddress: newWalletDetails.walletAddress,
       initialUserStatus: UserStatus.LOGGED_IN_NEW_DEVICE,
     };
   }
