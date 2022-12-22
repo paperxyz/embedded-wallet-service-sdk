@@ -1,4 +1,5 @@
 //types
+export * from "./constants/settings";
 export * from "./interfaces/Auth";
 export * from "./interfaces/EmbeddedWallets/EmbeddedWallets";
 export * from "./interfaces/EmbeddedWallets/GaslessTransactionMaker";

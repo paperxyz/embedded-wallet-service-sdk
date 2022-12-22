@@ -1,12 +1,11 @@
-import {
-  EMBEDDED_WALLET_PATH,
-  PAPER_APP_URL
-} from "../../constants/settings";
+import { EMBEDDED_WALLET_PATH, PAPER_APP_URL } from "../../constants/settings";
+import { LocalStorage } from "../Storage/LocalStorage";
 import { IframeCommunicator } from "./IframeCommunicator";
 
 export class EmbeddedWalletIframeCommunicator<
   T extends { [key: string]: any }
 > extends IframeCommunicator<T> {
+  protected clientId: string;
   constructor({ clientId }: { clientId: string }) {
     super({
       iframeId: EMBEDDED_WALLET_IFRAME_ID,
@@ -21,6 +20,18 @@ export class EmbeddedWalletIframeCommunicator<
         visibility: "hidden",
       },
     });
+    this.clientId = clientId;
+  }
+
+  override async onIframeLoadedInitVariables() {
+    const localStorage = new LocalStorage({
+      clientId: this.clientId,
+    });
+    return {
+      authCookie: await localStorage.getAuthCookie(),
+      deviceShareStored: await localStorage.getDeviceShare(),
+      clientId: this.clientId,
+    };
   }
 }
 

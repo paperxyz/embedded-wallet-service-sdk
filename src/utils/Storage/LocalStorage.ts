@@ -1,6 +1,6 @@
 import {
-  AUTH_TOKEN_LOCAL_STORAGE_PREFIX,
-  DEVICE_SHARE_LOCAL_STORAGE_PREFIX,
+  AUTH_TOKEN_LOCAL_STORAGE_NAME,
+  DEVICE_SHARE_LOCAL_STORAGE_NAME,
 } from "../../constants/settings";
 
 const data = new Map<string, string>();
@@ -30,21 +30,16 @@ export class LocalStorage {
   }
 
   async saveAuthCookie(cookie: string): Promise<void> {
-    this.setItem(`${AUTH_TOKEN_LOCAL_STORAGE_PREFIX}-${this.clientId}`, cookie);
+    this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId), cookie);
   }
   async getAuthCookie(): Promise<string | null> {
-    return this.getItem(`${AUTH_TOKEN_LOCAL_STORAGE_PREFIX}-${this.clientId}`);
+    return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
   }
 
   async saveDeviceShare(share: string): Promise<void> {
-    this.setItem(
-      `${DEVICE_SHARE_LOCAL_STORAGE_PREFIX}-${this.clientId}`,
-      share
-    );
+    this.setItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId), share);
   }
   async getDeviceShare(): Promise<string | null> {
-    return this.getItem(
-      `${DEVICE_SHARE_LOCAL_STORAGE_PREFIX}-${this.clientId}`
-    );
+    return this.getItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId));
   }
 }

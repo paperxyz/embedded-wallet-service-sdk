@@ -46,7 +46,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         container.appendChild(iframe);
       }
       iframe.src = link;
-      iframe.onload = IframeCommunicator.onIframeLoadHandler(
+      iframe.onload = this.onIframeLoadHandler(
         iframe,
         this.POST_LOAD_BUFFER_SECONDS,
         onIframeInitialize
@@ -55,7 +55,11 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     this.iframe = iframe;
   }
 
-  static onIframeLoadHandler(
+  protected async onIframeLoadedInitVariables(): Promise<Record<string, any>> {
+    return {};
+  }
+
+  onIframeLoadHandler(
     iframe: HTMLIFrameElement,
     prePostMessageSleepInSeconds: number,
     onIframeInitialize?: () => void
@@ -84,7 +88,10 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           // ? We can probably initialise the iframe with a bunch
           // of useful information so that we don't have to pass it
           // through in each of the future call. This would be where we do it.
-          { eventType: INIT_IFRAME_EVENT, data: {} },
+          {
+            eventType: INIT_IFRAME_EVENT,
+            data: await this.onIframeLoadedInitVariables(),
+          },
           "*",
           [channel.port2]
         );

@@ -102,7 +102,6 @@ export class Auth {
     if (authProvider === AuthProvider.GOOGLE) {
       const scopeToUse = scope ? encodeURIComponent(scope) : "openid%20email";
       const redirectUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopeToUse}&response_type=code`;
-      console.log(redirectUrl);
       window.location.href = redirectUrl;
       return;
     }
