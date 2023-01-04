@@ -215,10 +215,10 @@ export class Auth {
    * @description
    * Logs any existing user out of their wallet.
    * @throws when something goes wrong logging user out
-   * @returns {boolean} true if a user is successfully logged out. false if there's no user currently logged in.
+   * @returns {{success: boolean}} true if a user is successfully logged out. false if there's no user currently logged in.
    */
-  async logout(): Promise<boolean> {
+  async logout(): Promise<LogoutReturnType> {
     const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
-    return success;
+    return { success };
   }
 }
