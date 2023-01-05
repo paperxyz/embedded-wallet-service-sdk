@@ -219,6 +219,12 @@ export class Auth {
    */
   async logout(): Promise<LogoutReturnType> {
     const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
-    return { success };
+    const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
+    const isRemoveLocalDeviceShare =
+      await this.localStorage.removeDeviceShare();
+
+    return {
+      success: success || isRemoveAuthCookie || isRemoveLocalDeviceShare,
+    };
   }
 }

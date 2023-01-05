@@ -29,11 +29,23 @@ export class LocalStorage {
     }
   }
 
+  protected async removeItem(key: string): Promise<boolean> {
+    const item = await this.getItem(key);
+    if (this.isSupported && item) {
+      window.localStorage.removeItem(key);
+      return true;
+    }
+    return false;
+  }
+
   async saveAuthCookie(cookie: string): Promise<void> {
     this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId), cookie);
   }
   async getAuthCookie(): Promise<string | null> {
     return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
+  }
+  async removeAuthCookie(): Promise<boolean> {
+    return this.removeItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
   }
 
   async saveDeviceShare(share: string): Promise<void> {
@@ -41,5 +53,8 @@ export class LocalStorage {
   }
   async getDeviceShare(): Promise<string | null> {
     return this.getItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId));
+  }
+  async removeDeviceShare(): Promise<boolean> {
+    return this.removeItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId));
   }
 }
