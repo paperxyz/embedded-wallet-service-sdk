@@ -1,33 +1,41 @@
 import { EMBEDDED_WALLET_OTP_PATH } from "../constants/settings";
-import type {
+import {
+  AuthProvider,
   AuthStoredTokenReturnType,
+  AuthStoredTokenWithCookieReturnType,
   GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
-import { AuthProvider } from "../interfaces/Auth";
-import type { LogoutReturnType } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
-import { ModalInterface } from "../interfaces/Modal";
+import type {
+  LogoutReturnType,
+  PaperConstructorWithStylesType,
+} from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
+import { LocalStorage } from "../utils/Storage/LocalStorage";
 import { openModalForFunction } from "./Modal/Modal";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
     token: string;
-    provider: AuthProvider;
+    authProvider: AuthProvider;
   };
   getSocialLoginClientId: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
   };
   loginWithOAuthCode: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     code: string;
     redirectUri?: string;
   };
+  saveAuthCookie: { authCookie: string };
   logout: void;
 };
 
 export class Auth {
   protected clientId: string;
+  protected styles: CustomizationOptionsType | undefined;
   protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthTypes>;
+  protected localStorage: LocalStorage;
 
   /**
    * Used to manage the user's auth states. This should not be instantiated directly.
@@ -36,11 +44,32 @@ export class Auth {
    * Authentication settings can be managed via the [authentication settings dashboard](https://paper.xyz/dashboard/auth-settings)
    * @param {string} params.clientId the clientId associated with the various authentication settings
    */
-  constructor({ clientId }: { clientId: string }) {
+  constructor({
+    clientId,
+    styles,
+  }: Omit<PaperConstructorWithStylesType, "chain">) {
     this.clientId = clientId;
+    this.styles = styles;
     this.AuthQuerier = new EmbeddedWalletIframeCommunicator({
       clientId,
     });
+    this.localStorage = new LocalStorage({ clientId });
+  }
+
+  private async postLogin({
+    storedToken,
+  }: AuthStoredTokenWithCookieReturnType): Promise<AuthStoredTokenReturnType> {
+    this.localStorage.saveAuthCookie(storedToken.cookieString);
+    await this.AuthQuerier.call("saveAuthCookie", {
+      authCookie: storedToken.cookieString,
+    });
+    return {
+      storedToken: {
+        authProvider: storedToken.authProvider,
+        developerClientId: storedToken.developerClientId,
+        jwtToken: storedToken.jwtToken,
+      },
+    };
   }
 
   /**
@@ -54,11 +83,11 @@ export class Auth {
    * @throws if attempting to use other unsupported auth providers
    */
   async initializeSocialOAuth({
-    provider,
+    authProvider,
     redirectUri,
     scope,
   }: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     redirectUri: string;
     scope?: string;
   }): Promise<void> {
@@ -66,14 +95,13 @@ export class Auth {
       await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
         "getSocialLoginClientId",
         {
-          provider,
+          authProvider,
         }
       );
 
-    if (provider === AuthProvider.GOOGLE) {
+    if (authProvider === AuthProvider.GOOGLE) {
       const scopeToUse = scope ? encodeURIComponent(scope) : "openid%20email";
       const redirectUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopeToUse}&response_type=code`;
-      console.log(redirectUrl);
       window.location.href = redirectUrl;
       return;
     }
@@ -88,30 +116,32 @@ export class Auth {
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
   async loginWithSocialOAuth({
-    provider,
+    authProvider,
     redirectUri,
   }: {
-    provider: AuthProvider.GOOGLE;
+    authProvider: AuthProvider.GOOGLE;
     redirectUri: string;
   }): Promise<AuthStoredTokenReturnType> {
-    if (provider === AuthProvider.GOOGLE) {
+    if (authProvider === AuthProvider.GOOGLE) {
       // Get the authorization code from the URL query string
       // Make a call to the iframe with the authorization code
       const urlParams = new URLSearchParams(window.location.search);
       const authorizationCode = urlParams.get("code");
       if (!authorizationCode) {
         throw new Error(
-          "No authorization code found in the URL. Make sure to call this function in an authorized redirect_uri location that was set on your Google dashboard."
+          "No authorization code found in the URL. Make sure to call this function in an authorized redirect_uri location that wasS set on your Google dashboard."
         );
       }
-      return this.AuthQuerier.call<AuthStoredTokenReturnType>(
-        "loginWithOAuthCode",
-        {
-          code: authorizationCode,
-          provider,
-          redirectUri,
-        }
-      );
+      const storedToken =
+        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
+          "loginWithOAuthCode",
+          {
+            code: authorizationCode,
+            authProvider,
+            redirectUri,
+          }
+        );
+      return this.postLogin(storedToken);
     }
     throw new Error("Social login provider not recognized.");
   }
@@ -135,21 +165,22 @@ export class Auth {
    * @throws if there is already a modal opened by this function or {@link PaperEmbeddedWalletSdk.initializeUser}
    * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
    */
-  async loginWithOtp(
-    props?: {
-      email?: string;
-    } & ModalInterface
-  ): Promise<AuthStoredTokenReturnType> {
+  async loginWithOtp(props?: {
+    email?: string;
+  }): Promise<AuthStoredTokenReturnType> {
     return openModalForFunction<
       { emailOTP: { email?: string } },
+      AuthStoredTokenWithCookieReturnType,
       AuthStoredTokenReturnType
     >({
       clientId: this.clientId,
       path: EMBEDDED_WALLET_OTP_PATH,
       procedure: "emailOTP",
       params: { email: props?.email },
-      modalContainer: props?.modalContainer,
-      modalStyles: props?.modalStyles,
+      processResult: async (result) => {
+        return this.postLogin(result);
+      },
+      customizationOptions: this.styles,
     });
   }
 
@@ -164,28 +195,36 @@ export class Auth {
    */
   async loginWithJwtAuth({
     token,
-    provider,
+    authProvider,
   }: {
     token: string;
-    provider: AuthProvider;
+    authProvider: AuthProvider;
   }): Promise<AuthStoredTokenReturnType> {
-    return this.AuthQuerier.call<AuthStoredTokenReturnType>(
-      "loginWithJwtAuthCallback",
-      {
-        token,
-        provider,
-      }
-    );
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
+        "loginWithJwtAuthCallback",
+        {
+          token,
+          authProvider,
+        }
+      );
+    return this.postLogin(result);
   }
 
   /**
    * @description
    * Logs any existing user out of their wallet.
    * @throws when something goes wrong logging user out
-   * @returns {boolean} true if a user is successfully logged out. false if there's no user currently logged in.
+   * @returns {{success: boolean}} true if a user is successfully logged out. false if there's no user currently logged in.
    */
-  async logout(): Promise<boolean> {
+  async logout(): Promise<LogoutReturnType> {
     const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
-    return success;
+    const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
+    const isRemoveLocalDeviceShare =
+      await this.localStorage.removeDeviceShare();
+
+    return {
+      success: success || isRemoveAuthCookie || isRemoveLocalDeviceShare,
+    };
   }
 }

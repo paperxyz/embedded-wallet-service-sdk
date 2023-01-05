@@ -3,8 +3,8 @@ import type {
   PaperBaseConstructorType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type {
+  CallContractReturnType,
   ContractCallInputType,
-  ContractCallReturnType,
 } from "../../interfaces/EmbeddedWallets/GaslessTransactionMaker";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 
@@ -36,7 +36,7 @@ export class GaslessTransactionMaker {
   /**
    * @description
    * Use to call arbitrary contracts on the blockchain
-   * 
+   *
    * @param {string} params.contractAddress The address for which the contract call is directed too.
    * @param {Array} params.methodInterface the function stub on the contract. Often this looks something like `function myFunctionName(address user, uint256 tokenId) external payable`.
    * @param {Array} params.methodArgs The arguments that is to be passed to the contract in order.
@@ -47,8 +47,8 @@ export class GaslessTransactionMaker {
     contractAddress,
     methodArgs,
     methodInterface,
-  }: ContractCallInputType): Promise<ContractCallReturnType> {
-    return await this.gaslessTransactionQuerier.call<ContractCallReturnType>(
+  }: ContractCallInputType): Promise<CallContractReturnType> {
+    return await this.gaslessTransactionQuerier.call<CallContractReturnType>(
       "callContract",
       {
         chain: this.chain,

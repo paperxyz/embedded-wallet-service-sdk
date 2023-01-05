@@ -1,8 +1,4 @@
-import {
-  ModalInterface,
-  ModalStyles,
-  StyleObject,
-} from "../../interfaces/Modal";
+import { ModalStyles, StyleObject } from "../../interfaces/Modal";
 import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
@@ -14,6 +10,7 @@ export class Modal {
   protected main: HTMLDivElement;
   protected overlay: HTMLDivElement;
   protected iframe: HTMLIFrameElement;
+  protected closeButton: HTMLButtonElement | undefined;
 
   protected style: HTMLStyleElement;
   protected iframeCommunicator: IframeCommunicator<{}> | undefined;
@@ -63,6 +60,17 @@ export class Modal {
 
     this.container.appendChild(this.main);
     document.body.style.overflow = "hidden";
+  }
+
+  addCloseModalToggle(onCloseModal: () => void) {
+    this.closeButton = document.createElement("button");
+    this.closeButton.innerHTML = "X";
+    this.closeButton.onclick = onCloseModal;
+    this.closeButton.setAttribute(
+      "style",
+      "border:none;background:transparent;cursor:pointer;"
+    );
+    this.body.prepend(this.closeButton);
   }
 
   close() {
@@ -134,40 +142,48 @@ export class Modal {
   }
 }
 
+/**
+ * @see {@link EmbeddedWallet.setUpNewDevice} for an example of how this function is used
+ */
 export async function openModalForFunction<
+  // This is the mapping of procedure name to type that we can call
   ProcedureTypes extends { [key: string]: any },
+  // This is the return type of the procedure call from the iframe
   IframeReturnType,
+  // this is the actual return type of this function [openModalForFunction]
   ReturnType = IframeReturnType
->(
-  props: ModalInterface & {
-    clientId: string;
-    path: string;
-    procedure: keyof ProcedureTypes;
-    params: ProcedureTypes[keyof ProcedureTypes];
-    processResult?: (props: IframeReturnType) => ReturnType;
-    customizationOptions?: CustomizationOptionsType;
-  }
-): Promise<ReturnType | IframeReturnType> {
+>(props: {
+  clientId: string;
+  path: string;
+  procedure: keyof ProcedureTypes;
+  params: ProcedureTypes[keyof ProcedureTypes];
+  processResult?: (props: IframeReturnType) => ReturnType | Promise<ReturnType>;
+  customizationOptions?: CustomizationOptionsType;
+}): Promise<ReturnType | IframeReturnType> {
   if (!canOpenModal()) {
     throw new Error("A modal is already opened");
   }
 
-  const modal = new Modal(props.modalContainer, props.modalStyles);
+  const modal = new Modal(undefined, {
+    body: {
+      backgroundColor: props.customizationOptions?.colorBackground,
+    },
+  });
   const uiIframeManager =
     new EmbeddedWalletUiIframeCommunicator<ProcedureTypes>({
-      iframeStyles: props.modalStyles?.iframe,
       clientId: props.clientId,
       container: modal.body,
       path: props.path,
-      customizationOptions: {
-        ...props.customizationOptions,
-        colorBackground:
-          props.customizationOptions?.colorBackground ||
-          modal.styles.body.backgroundColor ||
-          modal.styles.body.background,
+      customizationOptions: props.customizationOptions,
+      onIframeInitialize: () => {
+        modal.addCloseModalToggle(async () => {
+          // TODO: remove type-hack
+          await uiIframeManager.call("closeModal", undefined as any);
+        });
       },
     });
   modal.open({ communicator: uiIframeManager });
+
   try {
     const result = await uiIframeManager.call<IframeReturnType>(
       props.procedure,
@@ -180,9 +196,6 @@ export async function openModalForFunction<
     }
     return result;
   } catch (e) {
-    console.error(
-      "Error while running iframe in modal ui. This should not be happening. Reach to us and let us know how you got here."
-    );
     modal.close();
     throw e;
   }

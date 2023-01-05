@@ -35,6 +35,9 @@ export const getDefaultModalStyles = (): ModalStyles => ({
     height: "375px",
     maxHeight: "80vh",
     overflow: "hidden",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'end'
   },
   iframe: {
     height: "100%",

@@ -18,3 +18,7 @@ export type StoredTokenType = {
 export type AuthStoredTokenReturnType = {
   storedToken: StoredTokenType;
 };
+
+export type AuthStoredTokenWithCookieReturnType = {
+  storedToken: StoredTokenType & { cookieString: string };
+};

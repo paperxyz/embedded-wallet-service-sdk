@@ -11,4 +11,4 @@ export type ContractCallInputType = {
   // }
 };
 
-export type ContractCallReturnType = { transactionHash: string };
+export type CallContractReturnType = { transactionHash: string };

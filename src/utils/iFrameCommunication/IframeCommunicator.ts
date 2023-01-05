@@ -7,6 +7,7 @@ export type IFrameCommunicatorProps = {
   iframeId: string;
   container?: HTMLElement;
   iframeStyles?: StyleObject;
+  onIframeInitialize?: () => void;
 };
 
 function sleep(seconds: number) {
@@ -28,6 +29,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     iframeId,
     container = document.body,
     iframeStyles,
+    onIframeInitialize,
   }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
@@ -44,21 +46,27 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         container.appendChild(iframe);
       }
       iframe.src = link;
-      iframe.onload = IframeCommunicator.onIframeLoadHandler(
+      iframe.onload = this.onIframeLoadHandler(
         iframe,
-        this.POST_LOAD_BUFFER_SECONDS
+        this.POST_LOAD_BUFFER_SECONDS,
+        onIframeInitialize
       );
     }
     this.iframe = iframe;
   }
 
-  static onIframeLoadHandler(
+  protected async onIframeLoadedInitVariables(): Promise<Record<string, any>> {
+    return {};
+  }
+
+  onIframeLoadHandler(
     iframe: HTMLIFrameElement,
-    prePostMessageSleepInSeconds: number
+    prePostMessageSleepInSeconds: number,
+    onIframeInitialize?: () => void
   ) {
     return async () => {
       const promise = new Promise<boolean>(async (res, rej) => {
-      const channel = new MessageChannel();
+        const channel = new MessageChannel();
         channel.port1.onmessage = (event: MessageEvent<MessageType<void>>) => {
           const { data } = event;
           channel.port1.close();
@@ -66,6 +74,9 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
             return rej(data.error);
           }
           isIframeLoaded.set(iframe.src, true);
+          if (onIframeInitialize) {
+            onIframeInitialize();
+          }
           return res(true);
         };
 
@@ -77,7 +88,10 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           // ? We can probably initialise the iframe with a bunch
           // of useful information so that we don't have to pass it
           // through in each of the future call. This would be where we do it.
-          { eventType: INIT_IFRAME_EVENT, data: {} },
+          {
+            eventType: INIT_IFRAME_EVENT,
+            data: await this.onIframeLoadedInitVariables(),
+          },
           "*",
           [channel.port2]
         );
