@@ -25,6 +25,8 @@ import { EthersSigner } from "./Signer";
 export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
   setUpNewDevice: { recoveryPassword: string };
+  createWalletUi: void;
+  setUpNewDeviceUI: void;
   getUserStatus: void;
   saveDeviceShare: { deviceShareStored: string };
 };

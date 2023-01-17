@@ -28,6 +28,7 @@ export type AuthTypes = {
     redirectUri?: string;
   };
   saveAuthCookie: { authCookie: string };
+  loginWithPaper: void;
   logout: void;
 };
 
@@ -207,6 +208,16 @@ export class Auth {
           token,
           authProvider,
         }
+      );
+    return this.postLogin(result);
+  }
+
+  async loginWithPaper() {
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
+        "loginWithPaper",
+        undefined,
+        true
       );
     return this.postLogin(result);
   }

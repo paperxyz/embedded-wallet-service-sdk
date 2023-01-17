@@ -102,10 +102,17 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     };
   }
 
-  async call<ReturnData>(procedureName: keyof T, params: T[keyof T]) {
+  async call<ReturnData>(
+    procedureName: keyof T,
+    params: T[keyof T],
+    showIframe: boolean = false
+  ) {
     const promise = new Promise<ReturnData>(async (res, rej) => {
       while (!isIframeLoaded.get(this.iframe.src)) {
         await sleep(this.POLLING_INTERVAL_SECONDS);
+      }
+      if (showIframe) {
+        this.iframe.style.display = "block";
       }
       const channel = new MessageChannel();
       channel.port1.onmessage = (
@@ -113,6 +120,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       ) => {
         const { data } = event;
         channel.port1.close();
+        this.iframe.style.display = "none";
         if (!data.success) {
           return rej(data.error);
         }

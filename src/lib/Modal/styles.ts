@@ -35,16 +35,20 @@ export const getDefaultModalStyles = (): ModalStyles => ({
     height: "375px",
     maxHeight: "80vh",
     overflow: "hidden",
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'end'
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "end",
   },
   iframe: {
     height: "100%",
     width: "100%",
     border: "none",
     backgroundColor: "transparent",
-    visibility: "hidden",
+    position: "fixed",
+    top: "0px",
+    right: "0px",
+    zIndex: "2147483647",
+    display: "none",
   },
 });
 
