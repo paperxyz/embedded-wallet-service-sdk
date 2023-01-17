@@ -13,6 +13,7 @@ import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../utils/Storage/LocalStorage";
 import { openModalForFunction } from "./Modal/Modal";
+import { PaperEmbeddedWalletSdk } from "./Paper";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
@@ -215,6 +216,22 @@ export class Auth {
     return this.postLogin(result);
   }
 
+  /**
+   * @description
+   * Used to log the user into their Paper wallet on your platform
+   *
+   * @example
+   *const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
+   * try {
+   *   await Paper.auth.loginWIthPaper();
+   *   // user is now logged in
+   * } catch (e) {
+   *   // User closed modal or something else went wrong during the authentication process
+   *   console.error(e)
+   * }
+   *
+   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider (This is either PAPER_EMAIL_OTP or GOOGLE for now), and your clientId
+   */
   async loginWithPaper() {
     const result =
       await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
