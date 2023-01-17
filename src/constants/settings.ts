@@ -17,8 +17,7 @@ const isOldPaperDomain = (): boolean =>
   typeof window !== "undefined" && window.location.origin.includes("paper.xyz");
 
 export const getPaperOriginUrl = (): string => {
-  if (isDev())
-    return "https://d180-2607-fea8-1ea1-d900-acba-1d63-8773-946f.ngrok.io";
+  if (isDev()) return "localhost:3000";
   if (isStaging()) {
     if (process?.env?.ZEET_DEPLOYMENT_URL) {
       return `https://${process.env.ZEET_DEPLOYMENT_URL}`;
