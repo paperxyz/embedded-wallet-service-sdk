@@ -1,5 +1,16 @@
 import { Chains } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 
+const isCustomSDKDomain = (): string | null => {
+  if (
+    typeof window !== "undefined" &&
+    window.localStorage.getItem("IS_PAPER_CUSTOM_SDK_DOMAIN")
+  ) {
+    return window.localStorage.getItem("IS_PAPER_CUSTOM_SDK_DOMAIN");
+  }
+
+  return null;
+};
+
 const isDev = (): boolean => {
   return !!(
     typeof window !== "undefined" &&
@@ -17,8 +28,13 @@ const isOldPaperDomain = (): boolean =>
   typeof window !== "undefined" && window.location.origin.includes("paper.xyz");
 
 export const getPaperOriginUrl = (): string => {
-  if (isDev())
-    return "https://d180-2607-fea8-1ea1-d900-acba-1d63-8773-946f.ngrok.io";
+  const customDomain = isCustomSDKDomain();
+
+  if (typeof customDomain === "string") {
+    return customDomain;
+  }
+
+  if (isDev()) return "http://localhost:3000";
   if (isStaging()) {
     if (process?.env?.ZEET_DEPLOYMENT_URL) {
       return `https://${process.env.ZEET_DEPLOYMENT_URL}`;
