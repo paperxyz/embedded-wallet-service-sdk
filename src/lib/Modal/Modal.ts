@@ -2,7 +2,6 @@ import { ModalStyles, StyleObject } from "../../interfaces/Modal";
 import { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletUiIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletUiIframeCommunicator";
 import { IframeCommunicator } from "../../utils/iFrameCommunication/IframeCommunicator";
-import { EmbeddedWallet } from "../EmbeddedWallets/EmbeddedWallet";
 import { getDefaultModalStyles, modalKeyframeAnimations } from "./styles";
 
 export const MODAL_ID = "pew-modal";

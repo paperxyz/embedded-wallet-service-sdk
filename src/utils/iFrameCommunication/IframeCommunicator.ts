@@ -117,14 +117,20 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
       }
       if (showIframe) {
         this.iframe.style.display = "block";
+        // magic number to let the display render before performing the animation of the modal in
+        await sleep(0.005);
       }
       const channel = new MessageChannel();
-      channel.port1.onmessage = (
+      channel.port1.onmessage = async (
         event: MessageEvent<MessageType<ReturnData>>
       ) => {
         const { data } = event;
         channel.port1.close();
-        this.iframe.style.display = "none";
+        if (showIframe) {
+          // magic number to let modal fade out before hiding it
+          await sleep(0.1);
+          this.iframe.style.display = "none";
+        }
         if (!data.success) {
           return rej(data.error);
         }
