@@ -179,17 +179,20 @@ export async function openModalForFunction<
       onIframeInitialize: () => {
         modal.addCloseModalToggle(async () => {
           // TODO: remove type-hack
-          await uiIframeManager.call("closeModal", undefined as any);
+          await uiIframeManager.call({
+            procedureName: "closeModal",
+            params: undefined as any,
+          });
         });
       },
     });
   modal.open({ communicator: uiIframeManager });
 
   try {
-    const result = await uiIframeManager.call<IframeReturnType>(
-      props.procedure,
-      props.params
-    );
+    const result = await uiIframeManager.call<IframeReturnType>({
+      procedureName: props.procedure,
+      params: props.params,
+    });
     modal.close();
     if (props.processResult) {
       const toReturn = props.processResult(result);

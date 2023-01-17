@@ -48,16 +48,16 @@ export class GaslessTransactionMaker {
     methodArgs,
     methodInterface,
   }: ContractCallInputType): Promise<CallContractReturnType> {
-    return await this.gaslessTransactionQuerier.call<CallContractReturnType>(
-      "callContract",
-      {
+    return await this.gaslessTransactionQuerier.call<CallContractReturnType>({
+      procedureName: "callContract",
+      params: {
         chain: this.chain,
         contractAddress,
         method: {
           args: methodArgs,
           stub: methodInterface,
         },
-      }
-    );
+      },
+    });
   }
 }

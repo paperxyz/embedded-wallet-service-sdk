@@ -1,10 +1,6 @@
 import type { Networkish } from "@ethersproject/providers";
 import { getDefaultProvider } from "@ethersproject/providers";
-import {
-  ChainToPublicRpc,
-  EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
-  EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
-} from "../../constants/settings";
+import { ChainToPublicRpc } from "../../constants/settings";
 import {
   Chains,
   GetUserStatusReturnType,
@@ -18,7 +14,6 @@ import {
 import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../../utils/Storage/LocalStorage";
-import { openModalForFunction } from "../Modal/Modal";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
@@ -26,7 +21,7 @@ export type WalletManagementTypes = {
   createWallet: { recoveryPassword: string };
   setUpNewDevice: { recoveryPassword: string };
   createWalletUi: void;
-  setUpNewDeviceUI: void;
+  setUpNewDeviceUi: void;
   getUserStatus: void;
   saveDeviceShare: { deviceShareStored: string };
 };
@@ -75,8 +70,11 @@ export class EmbeddedWallet {
     walletAddress,
   }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
     this.localStorage.saveAuthCookie(deviceShareStored);
-    await this.walletManagerQuerier.call<void>("saveDeviceShare", {
-      deviceShareStored,
+    await this.walletManagerQuerier.call<void>({
+      procedureName: "saveDeviceShare",
+      params: {
+        deviceShareStored,
+      },
     });
     return { walletAddress };
   }
@@ -93,25 +91,20 @@ export class EmbeddedWallet {
   ): Promise<SetUpWalletReturnType | undefined> {
     let newWalletDetails: SetUpWalletRpcReturnType;
     if (props.showUi) {
-      newWalletDetails = await openModalForFunction<
-        WalletManagementUiTypes,
-        SetUpWalletRpcReturnType
-      >({
-        clientId: this.clientId,
-        path: EMBEDDED_WALLET_CREATE_WALLET_UI_PATH,
-        procedure: "createWallet",
-        params: undefined,
-
-        customizationOptions: props,
-      });
+      newWalletDetails =
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "createWalletUi",
+          params: undefined,
+          showIframe: true,
+        });
     } else {
       newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
-          "createWallet",
-          {
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "createWallet",
+          params: {
             recoveryPassword: props.recoveryPassword,
-          }
-        );
+          },
+        });
     }
     await this.postSetUpWallet(newWalletDetails);
 
@@ -131,24 +124,20 @@ export class EmbeddedWallet {
   ): Promise<SetUpWalletReturnType | undefined> {
     let newWalletDetails: SetUpWalletRpcReturnType;
     if (props.showUi) {
-      newWalletDetails = await openModalForFunction<
-        WalletManagementUiTypes,
-        SetUpWalletRpcReturnType
-      >({
-        clientId: this.clientId,
-        path: EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH,
-        procedure: "setUpNewDevice",
-        params: undefined,
-        customizationOptions: props,
-      });
+      newWalletDetails =
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "setUpNewDeviceUi",
+          params: undefined,
+          showIframe: true,
+        });
     } else {
       newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>(
-          "setUpNewDevice",
-          {
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "setUpNewDevice",
+          params: {
             recoveryPassword: props.recoveryPassword,
-          }
-        );
+          },
+        });
     }
 
     await this.postSetUpWallet(newWalletDetails);
@@ -164,9 +153,10 @@ export class EmbeddedWallet {
    */
   async getUserStatus(): Promise<GetUserStatusType> {
     const userStatus =
-      await this.walletManagerQuerier.call<GetUserStatusReturnType>(
-        "getUserStatus"
-      );
+      await this.walletManagerQuerier.call<GetUserStatusReturnType>({
+        procedureName: "getUserStatus",
+        params: undefined,
+      });
     if (userStatus.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
       return {
         status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,

@@ -61,8 +61,11 @@ export class Auth {
     storedToken,
   }: AuthStoredTokenWithCookieReturnType): Promise<AuthStoredTokenReturnType> {
     this.localStorage.saveAuthCookie(storedToken.cookieString);
-    await this.AuthQuerier.call("saveAuthCookie", {
-      authCookie: storedToken.cookieString,
+    await this.AuthQuerier.call({
+      procedureName: "saveAuthCookie",
+      params: {
+        authCookie: storedToken.cookieString,
+      },
     });
     return {
       storedToken: {
@@ -93,12 +96,12 @@ export class Auth {
     scope?: string;
   }): Promise<void> {
     const { clientId } =
-      await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
-        "getSocialLoginClientId",
-        {
+      await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>({
+        procedureName: "getSocialLoginClientId",
+        params: {
           authProvider,
-        }
-      );
+        },
+      });
 
     if (authProvider === AuthProvider.GOOGLE) {
       const scopeToUse = scope ? encodeURIComponent(scope) : "openid%20email";
@@ -134,14 +137,14 @@ export class Auth {
         );
       }
       const storedToken =
-        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
-          "loginWithOAuthCode",
-          {
+        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+          procedureName: "loginWithOAuthCode",
+          params: {
             code: authorizationCode,
             authProvider,
             redirectUri,
-          }
-        );
+          },
+        });
       return this.postLogin(storedToken);
     }
     throw new Error("Social login provider not recognized.");
@@ -202,23 +205,23 @@ export class Auth {
     authProvider: AuthProvider;
   }): Promise<AuthStoredTokenReturnType> {
     const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
-        "loginWithJwtAuthCallback",
-        {
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "loginWithJwtAuthCallback",
+        params: {
           token,
           authProvider,
-        }
-      );
+        },
+      });
     return this.postLogin(result);
   }
 
   async loginWithPaper() {
     const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
-        "loginWithPaper",
-        undefined,
-        true
-      );
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "loginWithPaper",
+        params: undefined,
+        showIframe: true,
+      });
     return this.postLogin(result);
   }
 
@@ -229,7 +232,10 @@ export class Auth {
    * @returns {{success: boolean}} true if a user is successfully logged out. false if there's no user currently logged in.
    */
   async logout(): Promise<LogoutReturnType> {
-    const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
+    const { success } = await this.AuthQuerier.call<LogoutReturnType>({
+      procedureName: "logout",
+      params: undefined,
+    });
     const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
     const isRemoveLocalDeviceShare =
       await this.localStorage.removeDeviceShare();

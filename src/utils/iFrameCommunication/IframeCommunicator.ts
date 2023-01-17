@@ -102,11 +102,15 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     };
   }
 
-  async call<ReturnData>(
-    procedureName: keyof T,
-    params: T[keyof T],
-    showIframe: boolean = false
-  ) {
+  async call<ReturnData>({
+    procedureName,
+    params,
+    showIframe = false,
+  }: {
+    procedureName: keyof T;
+    params: T[keyof T];
+    showIframe?: boolean;
+  }) {
     const promise = new Promise<ReturnData>(async (res, rej) => {
       while (!isIframeLoaded.get(this.iframe.src)) {
         await sleep(this.POLLING_INTERVAL_SECONDS);
