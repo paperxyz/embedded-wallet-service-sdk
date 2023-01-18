@@ -13,7 +13,6 @@ import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../utils/Storage/LocalStorage";
 import { openModalForFunction } from "./Modal/Modal";
-import { PaperEmbeddedWalletSdk } from "./Paper";
 
 export type AuthTypes = {
   loginWithJwtAuthCallback: {
