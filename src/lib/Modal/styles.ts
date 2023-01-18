@@ -47,7 +47,7 @@ export const getDefaultModalStyles = (): ModalStyles => ({
     position: "fixed",
     top: "0px",
     right: "0px",
-    zIndex: "2147483647",
+    zIndex: "2147483646",
     display: "none",
   },
 });

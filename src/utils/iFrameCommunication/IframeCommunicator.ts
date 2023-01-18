@@ -95,8 +95,6 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           "*",
           [channel.port2]
         );
-
-        iframe.style.visibility = "visible";
       });
       await promise;
     };

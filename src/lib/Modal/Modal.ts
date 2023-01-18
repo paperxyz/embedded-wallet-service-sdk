@@ -68,7 +68,7 @@ export class Modal {
     this.closeButton.onclick = onCloseModal;
     this.closeButton.setAttribute(
       "style",
-      "border:none;background:transparent;cursor:pointer;"
+      "border:none;background:transparent;cursor:pointer;z-index:2147483647;"
     );
     this.body.prepend(this.closeButton);
   }
@@ -175,6 +175,9 @@ export async function openModalForFunction<
       container: modal.body,
       path: props.path,
       customizationOptions: props.customizationOptions,
+      iframeStyles: {
+        display: "block",
+      },
       onIframeInitialize: () => {
         modal.addCloseModalToggle(async () => {
           // TODO: remove type-hack
