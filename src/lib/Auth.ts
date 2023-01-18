@@ -28,6 +28,7 @@ export type AuthTypes = {
     redirectUri?: string;
   };
   saveAuthCookie: { authCookie: string };
+  loginWithPaper: void;
   logout: void;
 };
 
@@ -60,8 +61,11 @@ export class Auth {
     storedToken,
   }: AuthStoredTokenWithCookieReturnType): Promise<AuthStoredTokenReturnType> {
     this.localStorage.saveAuthCookie(storedToken.cookieString);
-    await this.AuthQuerier.call("saveAuthCookie", {
-      authCookie: storedToken.cookieString,
+    await this.AuthQuerier.call({
+      procedureName: "saveAuthCookie",
+      params: {
+        authCookie: storedToken.cookieString,
+      },
     });
     return {
       storedToken: {
@@ -92,12 +96,12 @@ export class Auth {
     scope?: string;
   }): Promise<void> {
     const { clientId } =
-      await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>(
-        "getSocialLoginClientId",
-        {
+      await this.AuthQuerier.call<GetSocialLoginClientIdReturnType>({
+        procedureName: "getSocialLoginClientId",
+        params: {
           authProvider,
-        }
-      );
+        },
+      });
 
     if (authProvider === AuthProvider.GOOGLE) {
       const scopeToUse = scope ? encodeURIComponent(scope) : "openid%20email";
@@ -133,14 +137,14 @@ export class Auth {
         );
       }
       const storedToken =
-        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
-          "loginWithOAuthCode",
-          {
+        await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+          procedureName: "loginWithOAuthCode",
+          params: {
             code: authorizationCode,
             authProvider,
             redirectUri,
-          }
-        );
+          },
+        });
       return this.postLogin(storedToken);
     }
     throw new Error("Social login provider not recognized.");
@@ -201,13 +205,39 @@ export class Auth {
     authProvider: AuthProvider;
   }): Promise<AuthStoredTokenReturnType> {
     const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>(
-        "loginWithJwtAuthCallback",
-        {
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "loginWithJwtAuthCallback",
+        params: {
           token,
           authProvider,
-        }
-      );
+        },
+      });
+    return this.postLogin(result);
+  }
+
+  /**
+   * @description
+   * Used to log the user into their Paper wallet on your platform
+   *
+   * @example
+   *const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
+   * try {
+   *   await Paper.auth.loginWIthPaper();
+   *   // user is now logged in
+   * } catch (e) {
+   *   // User closed modal or something else went wrong during the authentication process
+   *   console.error(e)
+   * }
+   *
+   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider (This is either PAPER_EMAIL_OTP or GOOGLE for now), and your clientId
+   */
+  async loginWithPaper() {
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "loginWithPaper",
+        params: undefined,
+        showIframe: true,
+      });
     return this.postLogin(result);
   }
 
@@ -218,7 +248,10 @@ export class Auth {
    * @returns {{success: boolean}} true if a user is successfully logged out. false if there's no user currently logged in.
    */
   async logout(): Promise<LogoutReturnType> {
-    const { success } = await this.AuthQuerier.call<LogoutReturnType>("logout");
+    const { success } = await this.AuthQuerier.call<LogoutReturnType>({
+      procedureName: "logout",
+      params: undefined,
+    });
     const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
     const isRemoveLocalDeviceShare =
       await this.localStorage.removeDeviceShare();

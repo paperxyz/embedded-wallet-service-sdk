@@ -95,24 +95,40 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
           "*",
           [channel.port2]
         );
-
-        iframe.style.visibility = "visible";
       });
       await promise;
     };
   }
 
-  async call<ReturnData>(procedureName: keyof T, params: T[keyof T]) {
+  async call<ReturnData>({
+    procedureName,
+    params,
+    showIframe = false,
+  }: {
+    procedureName: keyof T;
+    params: T[keyof T];
+    showIframe?: boolean;
+  }) {
     const promise = new Promise<ReturnData>(async (res, rej) => {
       while (!isIframeLoaded.get(this.iframe.src)) {
         await sleep(this.POLLING_INTERVAL_SECONDS);
       }
+      if (showIframe) {
+        this.iframe.style.display = "block";
+        // magic number to let the display render before performing the animation of the modal in
+        await sleep(0.005);
+      }
       const channel = new MessageChannel();
-      channel.port1.onmessage = (
+      channel.port1.onmessage = async (
         event: MessageEvent<MessageType<ReturnData>>
       ) => {
         const { data } = event;
         channel.port1.close();
+        if (showIframe) {
+          // magic number to let modal fade out before hiding it
+          await sleep(0.1);
+          this.iframe.style.display = "none";
+        }
         if (!data.success) {
           return rej(data.error);
         }

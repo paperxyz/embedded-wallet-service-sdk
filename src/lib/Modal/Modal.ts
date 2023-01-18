@@ -68,7 +68,7 @@ export class Modal {
     this.closeButton.onclick = onCloseModal;
     this.closeButton.setAttribute(
       "style",
-      "border:none;background:transparent;cursor:pointer;"
+      "border:none;background:transparent;cursor:pointer;z-index:2147483647;"
     );
     this.body.prepend(this.closeButton);
   }
@@ -175,20 +175,26 @@ export async function openModalForFunction<
       container: modal.body,
       path: props.path,
       customizationOptions: props.customizationOptions,
+      iframeStyles: {
+        display: "block",
+      },
       onIframeInitialize: () => {
         modal.addCloseModalToggle(async () => {
           // TODO: remove type-hack
-          await uiIframeManager.call("closeModal", undefined as any);
+          await uiIframeManager.call({
+            procedureName: "closeModal",
+            params: undefined as any,
+          });
         });
       },
     });
   modal.open({ communicator: uiIframeManager });
 
   try {
-    const result = await uiIframeManager.call<IframeReturnType>(
-      props.procedure,
-      props.params
-    );
+    const result = await uiIframeManager.call<IframeReturnType>({
+      procedureName: props.procedure,
+      params: props.params,
+    });
     modal.close();
     if (props.processResult) {
       const toReturn = props.processResult(result);

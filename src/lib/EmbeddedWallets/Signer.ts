@@ -41,22 +41,23 @@ export class EthersSigner extends Signer {
   }
 
   override async getAddress(): Promise<string> {
-    const { address } = await this.querier.call<GetAddressReturnType>(
-      "getAddress"
-    );
+    const { address } = await this.querier.call<GetAddressReturnType>({
+      procedureName: "getAddress",
+      params: undefined,
+    });
     return address;
   }
 
   override async signMessage(message: string | Bytes): Promise<string> {
-    const { signedMessage } = await this.querier.call<SignMessageReturnType>(
-      "signMessage",
-      {
+    const { signedMessage } = await this.querier.call<SignMessageReturnType>({
+      procedureName: "signMessage",
+      params: {
         message,
         chainId:
           (await this.provider?.getNetwork())?.chainId ??
           this.DEFAULT_ETHEREUM_CHAIN_ID,
-      }
-    );
+      },
+    });
     return signedMessage;
   }
 
@@ -64,11 +65,14 @@ export class EthersSigner extends Signer {
     transaction: TransactionRequest
   ): Promise<string> {
     const { signedTransaction } =
-      await this.querier.call<SignTransactionReturnType>("signTransaction", {
-        transaction,
-        chainId:
-          (await this.provider?.getNetwork())?.chainId ??
-          this.DEFAULT_ETHEREUM_CHAIN_ID,
+      await this.querier.call<SignTransactionReturnType>({
+        procedureName: "signTransaction",
+        params: {
+          transaction,
+          chainId:
+            (await this.provider?.getNetwork())?.chainId ??
+            this.DEFAULT_ETHEREUM_CHAIN_ID,
+        },
       });
     return signedTransaction;
   }

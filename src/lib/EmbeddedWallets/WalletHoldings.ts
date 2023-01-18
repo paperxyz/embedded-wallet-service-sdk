@@ -30,14 +30,14 @@ export class WalletHoldings {
   }
   // TODO: limit and offset are not currently being respected because they are not supported by simple-hash
   async listNfts({ chain, limit, offset }: WalletHoldingInputType) {
-    return this.walletHoldingQuerier.call<WalletHoldingNftsReturnType>(
-      "listNfts",
-      {
+    return this.walletHoldingQuerier.call<WalletHoldingNftsReturnType>({
+      procedureName: "listNfts",
+      params: {
         chain,
         limit,
         offset,
-      }
-    );
+      },
+    });
   }
   // TODO: Support listing tokens
   // ? What tokens do we want to support?
