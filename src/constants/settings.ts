@@ -17,7 +17,7 @@ const isOldPaperDomain = (): boolean =>
   typeof window !== "undefined" && window.location.origin.includes("paper.xyz");
 
 export const getPaperOriginUrl = (): string => {
-  if (isDev()) return "localhost:3000";
+  if (isDev()) return "http://localhost:3000";
   if (isStaging()) {
     if (process?.env?.ZEET_DEPLOYMENT_URL) {
       return `https://${process.env.ZEET_DEPLOYMENT_URL}`;

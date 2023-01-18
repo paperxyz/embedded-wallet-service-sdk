@@ -15,7 +15,7 @@
     "build:types": "yarn tsc",
     "build:lib": "yarn compile:lib --env.NODE_ENV production --minify",
     "build": "yarn build:lib && yarn build:types",
-    "release": "npm run build && npm publish"
+    "prepublish": "yarn build"
   },
   "keywords": [],
   "author": "Paper.xyz <team@paper.xyz>",
