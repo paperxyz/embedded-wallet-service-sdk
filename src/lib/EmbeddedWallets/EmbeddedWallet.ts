@@ -18,7 +18,7 @@ import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
 export type WalletManagementTypes = {
-  createWallet: { recoveryPassword: string };
+  createWallet: void;
   setUpNewDevice: { recoveryPassword: string };
   createWalletUi: void;
   setUpNewDeviceUi: void;
@@ -86,26 +86,12 @@ export class EmbeddedWallet {
    * * pwd >= 6 character
    * @returns {{walletAddress: string}} an object containing the user's wallet address
    */
-  private async createWallet(
-    props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails: SetUpWalletRpcReturnType;
-    if (props.showUi) {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWalletUi",
-          params: undefined,
-          showIframe: true,
-        });
-    } else {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWallet",
-          params: {
-            recoveryPassword: props.recoveryPassword,
-          },
-        });
-    }
+  private async createWallet(): Promise<SetUpWalletReturnType | undefined> {
+    const newWalletDetails =
+      await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+        procedureName: "createWallet",
+        params: undefined,
+      });
     await this.postSetUpWallet(newWalletDetails);
 
     return {
@@ -182,10 +168,7 @@ export class EmbeddedWallet {
         });
       }
       case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
-        return this.createWallet({
-          showUi: true,
-          ...this.styles,
-        });
+        return this.createWallet();
       }
       case UserStatus.LOGGED_OUT: {
         return;

@@ -38,6 +38,7 @@ export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 
 // TODO: Maybe consolidate types
+// this is the return type from the iframe
 export type GetUserStatusReturnType =
   | {
       status: UserStatus.LOGGED_OUT;
@@ -55,6 +56,8 @@ export type GetUserStatusReturnType =
       status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
       data: Omit<InitializedUser, "wallet">;
     };
+
+// this is the return type from the function that user calls
 export type GetUserStatusType =
   | {
       status: UserStatus.LOGGED_OUT;
