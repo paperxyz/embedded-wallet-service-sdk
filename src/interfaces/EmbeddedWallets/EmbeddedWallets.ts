@@ -1,12 +1,20 @@
-import { EmbeddedWallet } from "../../lib/EmbeddedWallets/EmbeddedWallet";
+import type { EmbeddedWallet } from "../../lib/EmbeddedWallets/EmbeddedWallet";
+import type { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 
 // General Embedded wallet types
 export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
 
 // Class constructor types
-export type PaperBaseConstructorType = { clientId: string; chain: Chains };
-export type PaperConstructorWithStylesType = PaperBaseConstructorType & {
+export type ClientIdConstructorType = { clientId: string };
+export type ClientIdWithQuerierType = ClientIdConstructorType & {
+  querier: EmbeddedWalletIframeCommunicator<any>;
+};
+export type ClientIdWithQuerierAndChainType = ClientIdWithQuerierType & {
+  chain: Chains;
+};
+export type PaperConstructorType = ClientIdConstructorType & {
+  chain: Chains;
   styles?: CustomizationOptionsType;
 };
 

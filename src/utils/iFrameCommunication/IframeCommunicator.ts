@@ -33,7 +33,6 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
   }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
-
     if (!iframe || iframe.src != link) {
       if (!iframe) {
         iframe = document.createElement("iframe");
