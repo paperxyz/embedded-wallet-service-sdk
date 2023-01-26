@@ -13,35 +13,34 @@ import {
   Chains,
   UserStatus,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../../utils/Storage/LocalStorage";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
 export type WalletManagementTypes = {
-  createWallet: void;
-  setUpNewDevice: { recoveryPassword: string };
-  createWalletUi: void;
-  setUpNewDeviceUi: void;
+  createWallet: void | { recoveryPassword: string };
+  setUpNewDevice: void | { recoveryPassword: string };
   getUserStatus: void;
   saveDeviceShare: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
-  createWallet: void;
-  setUpNewDevice: void;
+  createWalletUi: void;
+  setUpNewDeviceUi: void;
 };
 
 export type EmbeddedWalletInternalHelperType =
-  | { recoveryPassword: string; showUi: false }
-  | ({
+  | { showUi: false; recoveryPassword?: string }
+  | {
       showUi: true;
-    } & CustomizationOptionsType);
+    };
 
 export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
-  protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
+  protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<
+    WalletManagementTypes & WalletManagementUiTypes
+  >;
   protected localStorage: LocalStorage;
 
   public gasless: GaslessTransactionMaker;
@@ -82,12 +81,23 @@ export class EmbeddedWallet {
    * @private
    * @returns {{walletAddress: string, initialUserStatus: UserStatus}} an object containing the user's wallet address
    */
-  private async createWallet(): Promise<SetUpWalletReturnType | undefined> {
-    const newWalletDetails =
-      await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-        procedureName: "createWallet",
-        params: undefined,
-      });
+  private async createWallet(
+    props: EmbeddedWalletInternalHelperType
+  ): Promise<SetUpWalletReturnType | undefined> {
+    let newWalletDetails;
+    if (props.showUi) {
+      newWalletDetails =
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "createWalletUi",
+          params: undefined,
+        });
+    } else {
+      newWalletDetails =
+        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
+          procedureName: "createWallet",
+          params:undefined
+        });
+    }
     await this.postSetUpWallet(newWalletDetails);
 
     return {
@@ -116,9 +126,7 @@ export class EmbeddedWallet {
       newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
           procedureName: "setUpNewDevice",
-          params: {
-            recoveryPassword: props.recoveryPassword,
-          },
+          params: undefined,
         });
     }
 
@@ -159,11 +167,13 @@ export class EmbeddedWallet {
     switch (status) {
       case UserStatus.LOGGED_IN_NEW_DEVICE: {
         return this.setUpNewDevice({
-          showUi: true,
+          showUi: false,
         });
       }
       case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
-        return this.createWallet();
+        return this.createWallet({
+          showUi: false,
+        });
       }
       case UserStatus.LOGGED_OUT: {
         return;
