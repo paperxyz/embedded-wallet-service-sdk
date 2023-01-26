@@ -90,12 +90,13 @@ export class EmbeddedWallet {
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
           procedureName: "createWalletUi",
           params: undefined,
+          showIframe: true,
         });
     } else {
       newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
           procedureName: "createWallet",
-          params:undefined
+          params: undefined,
         });
     }
     await this.postSetUpWallet(newWalletDetails);
