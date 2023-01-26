@@ -29,11 +29,7 @@ export type WalletManagementUiTypes = {
   setUpNewDeviceUi: void;
 };
 
-export type EmbeddedWalletInternalHelperType =
-  | { showUi: false; recoveryPassword?: string }
-  | {
-      showUi: true;
-    };
+export type EmbeddedWalletInternalHelperType = { showUi: boolean };
 
 export class EmbeddedWallet {
   protected clientId: string;
