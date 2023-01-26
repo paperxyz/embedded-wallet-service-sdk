@@ -6,6 +6,7 @@ import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
 
 // Class constructor types
+// TODO: Probably clean this up eventually
 export type ClientIdConstructorType = { clientId: string };
 export type ClientIdWithQuerierType = ClientIdConstructorType & {
   querier: EmbeddedWalletIframeCommunicator<any>;
