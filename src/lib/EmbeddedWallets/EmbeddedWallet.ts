@@ -19,8 +19,8 @@ import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
 export type WalletManagementTypes = {
-  createWallet: void | { recoveryPassword: string };
-  setUpNewDevice: void | { recoveryPassword: string };
+  createWallet: void;
+  setUpNewDevice: void;
   getUserStatus: void;
   saveDeviceShare: { deviceShareStored: string };
 };
