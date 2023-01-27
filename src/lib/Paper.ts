@@ -31,7 +31,7 @@ export class PaperEmbeddedWalletSdk {
       clientId,
       customizationOptions: styles,
     });
-    this.auth = new Auth({ clientId, styles, querier: this.querier });
+    this.auth = new Auth({ clientId, querier: this.querier });
 
     this.wallet = new EmbeddedWallet({
       clientId,
