@@ -6,6 +6,7 @@ import { Signer } from "@ethersproject/abstract-signer";
 import type { Bytes } from "@ethersproject/bytes";
 import type { Deferrable } from "@ethersproject/properties";
 import { defineReadOnly } from "@ethersproject/properties";
+import { ClientIdWithQuerierType } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type {
   GetAddressReturnType,
   SignMessageReturnType,
@@ -30,13 +31,13 @@ export class EthersSigner extends Signer {
   constructor({
     provider,
     clientId,
-  }: {
+    querier,
+  }: ClientIdWithQuerierType & {
     provider: Provider;
-    clientId: string;
   }) {
     super();
     this.clientId = clientId;
-    this.querier = new EmbeddedWalletIframeCommunicator({ clientId });
+    this.querier = querier;
     defineReadOnly(this, "provider", provider);
   }
 
@@ -81,6 +82,7 @@ export class EthersSigner extends Signer {
     return new EthersSigner({
       clientId: this.clientId,
       provider,
+      querier: this.querier,
     });
   }
 }

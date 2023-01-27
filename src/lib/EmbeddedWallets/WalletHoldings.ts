@@ -1,6 +1,6 @@
 import {
   Chains,
-  PaperBaseConstructorType,
+  ClientIdWithQuerierAndChainType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import {
   WalletHoldingInputType,
@@ -17,16 +17,15 @@ export type WalletHoldingQueryTypes = {
  * @description WalletHoldings responsible for all the read related methods that the developers might want to do with EmbeddedWallet
  */
 export class WalletHoldings {
-  protected clientId: string;
   protected chain: Chains;
   protected walletHoldingQuerier: EmbeddedWalletIframeCommunicator<WalletHoldingQueryTypes>;
 
-  constructor({ chain, clientId }: PaperBaseConstructorType) {
-    this.clientId = clientId;
+  constructor({
+    chain,
+    querier,
+  }: Omit<ClientIdWithQuerierAndChainType, "clientId">) {
     this.chain = chain;
-    this.walletHoldingQuerier = new EmbeddedWalletIframeCommunicator({
-      clientId,
-    });
+    this.walletHoldingQuerier = querier;
   }
   // TODO: limit and offset are not currently being respected because they are not supported by simple-hash
   async listNfts({ chain, limit, offset }: WalletHoldingInputType) {

@@ -6,15 +6,15 @@ import {
   GetSocialLoginClientIdReturnType,
 } from "../interfaces/Auth";
 import type {
+  ClientIdWithQuerierType,
   LogoutReturnType,
-  PaperConstructorWithStylesType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { CustomizationOptionsType } from "../interfaces/utils/IframeCommunicator";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../utils/Storage/LocalStorage";
 import { openModalForFunction } from "./Modal/Modal";
 
-export type AuthTypes = {
+export type AuthQuerierTypes = {
   loginWithJwtAuthCallback: {
     token: string;
     authProvider: AuthProvider;
@@ -34,8 +34,9 @@ export type AuthTypes = {
 
 export class Auth {
   protected clientId: string;
+  // TODO: Remove once we deprecate other login methods
   protected styles: CustomizationOptionsType | undefined;
-  protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthTypes>;
+  protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthQuerierTypes>;
   protected localStorage: LocalStorage;
 
   /**
@@ -48,12 +49,13 @@ export class Auth {
   constructor({
     clientId,
     styles,
-  }: Omit<PaperConstructorWithStylesType, "chain">) {
+    querier,
+  }: ClientIdWithQuerierType & {
+    styles?: CustomizationOptionsType;
+  }) {
     this.clientId = clientId;
     this.styles = styles;
-    this.AuthQuerier = new EmbeddedWalletIframeCommunicator({
-      clientId,
-    });
+    this.AuthQuerier = querier;
     this.localStorage = new LocalStorage({ clientId });
   }
 

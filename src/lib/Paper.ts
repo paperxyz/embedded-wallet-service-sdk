@@ -1,14 +1,16 @@
 import type {
   GetUserStatusType,
   InitializedUser,
-  PaperConstructorWithStylesType,
+  PaperConstructorType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { UserStatus } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { Auth } from "./Auth";
 import { EmbeddedWallet } from "./EmbeddedWallets/EmbeddedWallet";
 
 export class PaperEmbeddedWalletSdk {
   protected clientId: string;
+  protected querier: EmbeddedWalletIframeCommunicator<any>;
 
   private wallet: EmbeddedWallet;
   /**
@@ -23,14 +25,18 @@ export class PaperEmbeddedWalletSdk {
    * @param {Chains} initParams.chain sets the default chain that the EmbeddedWallet will live on.
    * @param {CustomizationOptionsType} initParams.styles sets the default style override for any modal that pops up asking for user's details when creating wallet or logging in.
    */
-  constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
+  constructor({ clientId, chain, styles }: PaperConstructorType) {
     this.clientId = clientId;
-    this.auth = new Auth({ clientId, styles });
+    this.querier = new EmbeddedWalletIframeCommunicator({
+      clientId,
+      customizationOptions: styles,
+    });
+    this.auth = new Auth({ clientId, styles, querier: this.querier });
 
     this.wallet = new EmbeddedWallet({
       clientId,
       chain,
-      styles,
+      querier: this.querier,
     });
   }
 

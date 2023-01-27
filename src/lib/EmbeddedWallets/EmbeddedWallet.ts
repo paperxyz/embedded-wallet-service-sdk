@@ -1,46 +1,42 @@
 import type { Networkish } from "@ethersproject/providers";
 import { getDefaultProvider } from "@ethersproject/providers";
 import { ChainToPublicRpc } from "../../constants/settings";
-import {
-  Chains,
+import type {
+  ClientIdWithQuerierAndChainType,
   GetUserStatusReturnType,
   GetUserStatusType,
-  PaperConstructorWithStylesType,
   SetUpWalletReturnType,
   SetUpWalletRpcReturnType,
-  UserStatus,
   WalletAddressObjectType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
-import type { CustomizationOptionsType } from "../../interfaces/utils/IframeCommunicator";
+import {
+  Chains,
+  UserStatus,
+} from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../../utils/Storage/LocalStorage";
 import { GaslessTransactionMaker } from "./GaslessTransactionMaker";
 import { EthersSigner } from "./Signer";
 
 export type WalletManagementTypes = {
-  createWallet: { recoveryPassword: string };
-  setUpNewDevice: { recoveryPassword: string };
-  createWalletUi: void;
-  setUpNewDeviceUi: void;
+  createWallet: void;
+  setUpNewDevice: void;
   getUserStatus: void;
   saveDeviceShare: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
-  createWallet: void;
-  setUpNewDevice: void;
+  createWalletUi: void;
+  setUpNewDeviceUi: void;
 };
 
-export type EmbeddedWalletInternalHelperType =
-  | { recoveryPassword: string; showUi: false }
-  | ({
-      showUi: true;
-    } & CustomizationOptionsType);
+export type EmbeddedWalletInternalHelperType = { showUi: boolean };
 
 export class EmbeddedWallet {
   protected clientId: string;
   protected chain: Chains;
-  protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<WalletManagementTypes>;
-  protected styles: CustomizationOptionsType | undefined;
+  protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<
+    WalletManagementTypes & WalletManagementUiTypes
+  >;
   protected localStorage: LocalStorage;
 
   public gasless: GaslessTransactionMaker;
@@ -49,17 +45,15 @@ export class EmbeddedWallet {
    * Not meant to be initialized directly. Call {@link .initializeUser} to get an instance
    * @param param0
    */
-  constructor({ clientId, chain, styles }: PaperConstructorWithStylesType) {
+  constructor({ clientId, chain, querier }: ClientIdWithQuerierAndChainType) {
     this.clientId = clientId;
     this.chain = chain;
-    this.styles = styles;
-    this.walletManagerQuerier = new EmbeddedWalletIframeCommunicator({
-      clientId,
-    });
+    this.walletManagerQuerier = querier;
 
     this.gasless = new GaslessTransactionMaker({
       chain,
       clientId,
+      querier,
     });
 
     this.localStorage = new LocalStorage({ clientId });
@@ -81,15 +75,12 @@ export class EmbeddedWallet {
 
   /**
    * @private
-   * @param props.showUi if false, recoveryPassword is needed
-   * @param props.recoveryPassword Must follow good password practice. As of writing this:
-   * * pwd >= 6 character
-   * @returns {{walletAddress: string}} an object containing the user's wallet address
+   * @returns {{walletAddress: string, initialUserStatus: UserStatus}} an object containing the user's wallet address
    */
   private async createWallet(
     props: EmbeddedWalletInternalHelperType
   ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails: SetUpWalletRpcReturnType;
+    let newWalletDetails;
     if (props.showUi) {
       newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
@@ -101,9 +92,7 @@ export class EmbeddedWallet {
       newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
           procedureName: "createWallet",
-          params: {
-            recoveryPassword: props.recoveryPassword,
-          },
+          params: undefined,
         });
     }
     await this.postSetUpWallet(newWalletDetails);
@@ -117,7 +106,7 @@ export class EmbeddedWallet {
   /**
    * @private
    * @param {Object} props options to either show or not show UI.
-   * @returns {{walletAddress: string}} an object containing the user's wallet address
+   * @returns {{walletAddress: string, initialUserStatus: UserStatus}} an object containing the user's wallet address
    */
   private async setUpNewDevice(
     props: EmbeddedWalletInternalHelperType
@@ -134,9 +123,7 @@ export class EmbeddedWallet {
       newWalletDetails =
         await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
           procedureName: "setUpNewDevice",
-          params: {
-            recoveryPassword: props.recoveryPassword,
-          },
+          params: undefined,
         });
     }
 
@@ -177,14 +164,12 @@ export class EmbeddedWallet {
     switch (status) {
       case UserStatus.LOGGED_IN_NEW_DEVICE: {
         return this.setUpNewDevice({
-          showUi: true,
-          ...this.styles,
+          showUi: false,
         });
       }
       case UserStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
         return this.createWallet({
-          showUi: true,
-          ...this.styles,
+          showUi: false,
         });
       }
       case UserStatus.LOGGED_OUT: {
@@ -215,6 +200,7 @@ export class EmbeddedWallet {
     this.gasless = new GaslessTransactionMaker({
       chain,
       clientId: this.clientId,
+      querier: this.walletManagerQuerier,
     });
   }
 
@@ -239,6 +225,7 @@ export class EmbeddedWallet {
       provider: getDefaultProvider(
         network?.rpcEndpoint ?? ChainToPublicRpc[this.chain]
       ),
+      querier: this.walletManagerQuerier,
     });
     return signer;
   }
