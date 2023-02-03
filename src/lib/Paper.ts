@@ -44,6 +44,7 @@ export class PaperEmbeddedWalletSdk {
         await this.wallet.initializeWallet();
         return {
           user: {
+            status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
             authDetails,
             wallet: this.wallet,
             walletAddress: await (

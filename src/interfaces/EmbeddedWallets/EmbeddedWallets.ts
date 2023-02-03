@@ -24,6 +24,7 @@ export type PaperConstructorType = ClientIdConstructorType & {
 export type AuthDetails = { email?: string };
 
 export type InitializedUser = {
+  status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
   wallet: EmbeddedWallet;
   walletAddress: string;
   authDetails: AuthDetails;
@@ -71,7 +72,7 @@ export type GetUserWalletStatusRpcReturnType =
     }
   | {
       status: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED;
-      user: Omit<InitializedUser, "wallet">;
+      user: Omit<InitializedUser, "wallet" | "status">;
     };
 
 // this is the return type from the EmbeddedWallet Class getUserWalletStatus method
@@ -90,7 +91,7 @@ export type GetUserWalletStatusFnReturnType =
     }
   | {
       status: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED;
-      user: InitializedUser;
+      user: Omit<InitializedUser, "status">;
     };
 
 // This is returned from the getUser method in PaperEmbeddedWalletSdk
@@ -98,6 +99,4 @@ export type GetUser =
   | {
       status: UserStatus.LOGGED_OUT;
     }
-  | (InitializedUser & {
-      status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
-    });
+  | InitializedUser;
