@@ -1,11 +1,7 @@
 {
   "name": "@paperxyz/embedded-wallet-service-sdk",
   "description": "Paper.xyz sdk for embedded wallets",
-<<<<<<< HEAD
-  "version": "0.0.14",
-=======
   "version": "0.0.15",
->>>>>>> 9c0aebfdd01e5e785913b2c1025761600b4e0a63
   "files": [
     "dist/**/*"
   ],
