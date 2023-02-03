@@ -38,7 +38,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictNullChecks": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "stripInternal": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

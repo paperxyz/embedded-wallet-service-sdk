@@ -6,7 +6,8 @@ import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
 
 // Class constructor types
-// TODO: Probably clean this up eventually
+// types for class constructors still a little messy right now.
+// Open to PRs from whoever sees this and knows of a cleaner way to handle things
 export type ClientIdConstructorType = { clientId: string };
 export type ClientIdWithQuerierType = ClientIdConstructorType & {
   querier: EmbeddedWalletIframeCommunicator<any>;
@@ -19,25 +20,33 @@ export type PaperConstructorType = ClientIdConstructorType & {
   styles?: CustomizationOptionsType;
 };
 
-export enum UserStatus {
-  LOGGED_OUT = "Logged Out",
-  LOGGED_IN_WALLET_UNINITIALIZED = "Logged In, Wallet Uninitialized",
-  LOGGED_IN_NEW_DEVICE = "Logged In, New Device",
-  LOGGED_IN_WALLET_INITIALIZED = "Logged In, Wallet Initialized",
-}
+// Auth Types
 export type AuthDetails = { email?: string };
 
 export type InitializedUser = {
+  status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
   wallet: EmbeddedWallet;
   walletAddress: string;
   authDetails: AuthDetails;
 };
 
+// Embedded Wallet Types
+export enum UserStatus {
+  LOGGED_OUT = "Logged Out",
+  LOGGED_IN_WALLET_INITIALIZED = "Logged In, Wallet Initialized",
+}
+export enum UserWalletStatus {
+  LOGGED_OUT = "Logged Out",
+  LOGGED_IN_WALLET_UNINITIALIZED = "Logged In, Wallet Uninitialized",
+  LOGGED_IN_NEW_DEVICE = "Logged In, New Device",
+  LOGGED_IN_WALLET_INITIALIZED = "Logged In, Wallet Initialized",
+}
+
 export type WalletAddressObjectType = {
   walletAddress: string;
 };
 export type SetUpWalletReturnType = WalletAddressObjectType & {
-  initialUserStatus: UserStatus;
+  initialUserStatus: UserWalletStatus;
 };
 export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
   deviceShareStored: string;
@@ -46,41 +55,48 @@ export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 
-// TODO: Maybe consolidate types
-// this is the return type from the iframe
-export type GetUserStatusReturnType =
+// ! Types seem repetitive, but the name should identify which goes where
+// this is the return type from the EmbeddedWallet Class getUserWalletStatus method iframe call
+export type GetUserWalletStatusRpcReturnType =
   | {
-      status: UserStatus.LOGGED_OUT;
-      data: undefined;
+      status: UserWalletStatus.LOGGED_OUT;
+      user: undefined;
     }
   | {
-      status: UserStatus.LOGGED_IN_WALLET_UNINITIALIZED;
-      data: { authDetails: AuthDetails };
+      status: UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED;
+      user: { authDetails: AuthDetails };
     }
   | {
-      status: UserStatus.LOGGED_IN_NEW_DEVICE;
-      data: { authDetails: AuthDetails; walletAddress: string };
+      status: UserWalletStatus.LOGGED_IN_NEW_DEVICE;
+      user: { authDetails: AuthDetails; walletAddress: string };
     }
   | {
-      status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
-      data: Omit<InitializedUser, "wallet">;
+      status: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED;
+      user: Omit<InitializedUser, "wallet" | "status">;
     };
 
-// this is the return type from the function that user calls
-export type GetUserStatusType =
+// this is the return type from the EmbeddedWallet Class getUserWalletStatus method
+export type GetUserWalletStatusFnReturnType =
+  | {
+      status: UserWalletStatus.LOGGED_OUT;
+      user: undefined;
+    }
+  | {
+      status: UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED;
+      user: { authDetails: AuthDetails };
+    }
+  | {
+      status: UserWalletStatus.LOGGED_IN_NEW_DEVICE;
+      user: { authDetails: AuthDetails; walletAddress: string };
+    }
+  | {
+      status: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED;
+      user: Omit<InitializedUser, "status">;
+    };
+
+// This is returned from the getUser method in PaperEmbeddedWalletSdk
+export type GetUser =
   | {
       status: UserStatus.LOGGED_OUT;
-      data: undefined;
     }
-  | {
-      status: UserStatus.LOGGED_IN_WALLET_UNINITIALIZED;
-      data: { authDetails: AuthDetails };
-    }
-  | {
-      status: UserStatus.LOGGED_IN_NEW_DEVICE;
-      data: { authDetails: AuthDetails; walletAddress: string };
-    }
-  | {
-      status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
-      data: InitializedUser;
-    };
+  | InitializedUser;
