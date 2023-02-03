@@ -1,3 +1,8 @@
+import {
+  AuthDetails,
+  InitializedUser,
+} from "./EmbeddedWallets/EmbeddedWallets";
+
 export enum AuthProvider {
   PAPER_EMAIL_OTP = "PaperEmailOTP",
   GOOGLE = "Google",
@@ -12,6 +17,7 @@ export type GetSocialLoginClientIdReturnType = {
 export type StoredTokenType = {
   jwtToken: string;
   authProvider: AuthProvider;
+  authDetails: AuthDetails;
   developerClientId: string;
 };
 
@@ -20,5 +26,10 @@ export type AuthStoredTokenReturnType = {
 };
 
 export type AuthStoredTokenWithCookieReturnType = {
-  storedToken: StoredTokenType & { cookieString: string };
+  storedToken: StoredTokenType & {
+    cookieString: string;
+    storeCookieString: boolean;
+  };
 };
+
+export type AuthLoginReturnType = { user: InitializedUser };
