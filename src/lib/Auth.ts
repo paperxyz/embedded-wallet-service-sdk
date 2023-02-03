@@ -6,6 +6,7 @@ import {
 import type {
   AuthDetails,
   ClientIdWithQuerierType,
+  InitializedUser,
   LogoutReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
@@ -33,7 +34,7 @@ export class Auth {
    * Used to manage the user's auth states. This should not be instantiated directly.
    * Call {@link PaperEmbeddedWalletSdk.auth} instead.
    *
-   * Authentication settings can be managed via the [authentication settings dashboard](https://paper.xyz/dashboard/auth-settings)
+   * Authentication settings can be managed via the [authentication settings dashboard](https://withpaper.com/dashboard/auth-settings)
    * @param {string} params.clientId the clientId associated with the various authentication settings
    */
   constructor({
@@ -69,10 +70,10 @@ export class Auth {
    * @description
    * Used to log the user in with an oauth login flow
    *
-   * Note that you have to either enable "Auth0" or "Custom JSON Web Token" in the [auth setting dashboard](https://paper.xyz/dashboard/auth-settings) in order to use this
+   * Note that you have to either enable "Auth0" or "Custom JSON Web Token" in the [auth setting dashboard](https://withpaper.com/dashboard/auth-settings) in order to use this
    * @param {string} jwtParams.token The associate token from the oauth callback
    * @param {AuthProvider} jwtParams.provider The Auth provider that is being used
-   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and clientId
+   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async loginWithJwtAuth({
     token,
@@ -106,7 +107,7 @@ export class Auth {
    *   console.error(e)
    * }
    *
-   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider (This is either PAPER_EMAIL_OTP or GOOGLE for now), and your clientId
+   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async loginWithPaperModal(): Promise<AuthLoginReturnType> {
     const result =
@@ -127,7 +128,7 @@ export class Auth {
    *  // prompts user to enter the code they received
    *  await Paper.auth.loginWithPaperEmailOtp({ email : "you@example.com" });
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
-   * @returns {{storedToken: {jwtToken: string, authProvider:AuthProvider, developerClientId: string}}} An object with the jwtToken, authProvider, and the developer clientId that called it
+   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async loginWithPaperEmailOtp({
     email,

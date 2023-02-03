@@ -21,7 +21,7 @@ export class PaperEmbeddedWalletSdk {
   /**
    * @example
    * const Paper = new PaperEmbeddedWalletSdk({ clientId: "", chain: "Goerli" });
-   * @param {string} initParams.clientId the clientId found on the {@link https://paper.xyz/dashboard/developers developer's dashboard}
+   * @param {string} initParams.clientId the clientId found on the {@link https://withpaper.com/dashboard/developers developer's dashboard}
    * @param {Chains} initParams.chain sets the default chain that the EmbeddedWallet will live on.
    * @param {CustomizationOptionsType} initParams.styles sets the default style override for any modal that pops up asking for user's details when creating wallet or logging in.
    */
@@ -80,7 +80,9 @@ export class PaperEmbeddedWalletSdk {
     switch (userStatus.status) {
       case UserWalletStatus.LOGGED_IN_NEW_DEVICE:
       case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED:
-        console.error('BAD STATE: If you see this repeatedly, please reach out to us on discord and let us know!')
+        console.error(
+          "BAD STATE: If you see this repeatedly, please reach out to us on discord and let us know!"
+        );
         // User clears part of their local cache somehow
         await this.wallet.initializeWallet();
         return this.getUser();
