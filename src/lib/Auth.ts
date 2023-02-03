@@ -6,7 +6,6 @@ import {
 import type {
   AuthDetails,
   ClientIdWithQuerierType,
-  InitializedUser,
   LogoutReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
