@@ -3,7 +3,7 @@ import type { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommuni
 import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 
 // General Embedded wallet types
-export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum";
+export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum" | "Avalanche";
 
 // Class constructor types
 // types for class constructors still a little messy right now.
