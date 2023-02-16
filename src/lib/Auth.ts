@@ -153,13 +153,19 @@ export class Auth {
    *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    *  // sends user an OTP code
    * try {
-   *   await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
+   *    await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
    * } catch(e) {
-   *   console.error(e);
+   *    // Error Sending user's email an OTP code
+   *    console.error(e);
    * }
    *
-   * // Then when you're ready to verify
-   * const user = await Paper.auth.verifyPaperEmailLoginOtp({ email: "you@example.com", otp: "6-DIGIT_CODE_HERE" });
+   * // Then when your user is ready to verify their OTP
+   * try {
+   *    const user = await Paper.auth.verifyPaperEmailLoginOtp({ email: "you@example.com", otp: "6-DIGIT_CODE_HERE" });
+   * } catch(e) {
+   *    // Error verifying the OTP code
+   *    console.error(e)
+   * }
    *
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
    * @returns {{success: boolean}} indicating if the email was successfully sent (Note the email could still end up in the user's spam folder)
@@ -174,6 +180,8 @@ export class Auth {
 
   /**
    *  @description
+   * Used to verify the otp that the user receives from  Paper
+   *
    * See {@link Auth.sendPaperEmailLoginOtp} for how the headless call flow looks like
    *
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
