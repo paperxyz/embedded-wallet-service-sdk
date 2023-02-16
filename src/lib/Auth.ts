@@ -19,6 +19,8 @@ export type AuthQuerierTypes = {
   saveAuthCookie: { authCookie: string };
   loginWithPaperModal: void | { email: string };
   logout: void;
+  sendPaperEmailLoginOtp: { email: string };
+  verifyPaperEmailLoginOtp: { email: string; otp: string };
 };
 
 export class Auth {
@@ -139,6 +141,29 @@ export class Auth {
         procedureName: "loginWithPaperModal",
         params: { email },
         showIframe: true,
+      });
+    return this.postLogin(result);
+  }
+
+  async sendPaperEmailLoginOtp({ email }: { email: string }) {
+    const { success } = await this.AuthQuerier.call<LogoutReturnType>({
+      procedureName: "sendPaperEmailLoginOtp",
+      params: { email },
+    });
+    return { success };
+  }
+
+  async verifyPaperEmailLoginOtp({
+    email,
+    otp,
+  }: {
+    email: string;
+    otp: string;
+  }) {
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "verifyPaperEmailLoginOtp",
+        params: { email, otp },
       });
     return this.postLogin(result);
   }
