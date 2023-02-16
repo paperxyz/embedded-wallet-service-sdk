@@ -19,7 +19,11 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install
-      - name: Lint and build the package
+      - name: Lint
         uses: borales/actions-yarn@v4
         with:
-          cmd: lint && build
+          cmd: lint
+      - name: Build
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
