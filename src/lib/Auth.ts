@@ -19,6 +19,8 @@ export type AuthQuerierTypes = {
   saveAuthCookie: { authCookie: string };
   loginWithPaperModal: void | { email: string };
   logout: void;
+  sendPaperEmailLoginOtp: { email: string };
+  verifyPaperEmailLoginOtp: { email: string; otp: string };
 };
 
 export class Auth {
@@ -123,7 +125,7 @@ export class Auth {
    * Used to log the user into their Paper wallet using email OTP
    *
    * @example
-   *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"})
+   *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    *  // prompts user to enter the code they received
    *  await Paper.auth.loginWithPaperEmailOtp({ email : "you@example.com" });
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
@@ -139,6 +141,56 @@ export class Auth {
         procedureName: "loginWithPaperModal",
         params: { email },
         showIframe: true,
+      });
+    return this.postLogin(result);
+  }
+
+  /**
+   * @description
+   * Sends the users at {email} an OTP code. Which they can use to have themselves verified via {@link Auth.verifyPaperEmailLoginOtp}
+   *
+   * @example
+   *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
+   *  // sends user an OTP code
+   * try {
+   *   await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
+   * } catch(e) {
+   *   console.error(e);
+   * }
+   *
+   * // Then when you're ready to verify
+   * const user = await Paper.auth.verifyPaperEmailLoginOtp({ email: "you@example.com", otp: "6-DIGIT_CODE_HERE" });
+   *
+   * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
+   * @returns {{success: boolean}} indicating if the email was successfully sent (Note the email could still end up in the user's spam folder)
+   */
+  async sendPaperEmailLoginOtp({ email }: { email: string }) {
+    const { success } = await this.AuthQuerier.call<LogoutReturnType>({
+      procedureName: "sendPaperEmailLoginOtp",
+      params: { email },
+    });
+    return { success };
+  }
+
+  /**
+   *  @description
+   * See {@link Auth.sendPaperEmailLoginOtp} for how the headless call flow looks like
+   *
+   * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
+   * @param {string} props.otp The code that the user received in their email
+   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
+   */
+  async verifyPaperEmailLoginOtp({
+    email,
+    otp,
+  }: {
+    email: string;
+    otp: string;
+  }) {
+    const result =
+      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
+        procedureName: "verifyPaperEmailLoginOtp",
+        params: { email, otp },
       });
     return this.postLogin(result);
   }

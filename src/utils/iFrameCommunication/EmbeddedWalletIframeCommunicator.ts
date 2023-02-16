@@ -54,7 +54,7 @@ export function createEmbeddedWalletIframeLink({
     for (const queryKey of Object.keys(queryParams)) {
       embeddedWalletUrl.searchParams.set(
         queryKey,
-        queryParams[queryKey].toString()
+        queryParams[queryKey]?.toString() || ""
       );
     }
   }
