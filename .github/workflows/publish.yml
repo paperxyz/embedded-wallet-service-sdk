@@ -19,13 +19,13 @@ jobs:
           node-version: 16.x
 
       - name: Install required package deps
-        run: yarn
+        run: npm i
 
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn run build
+          publish: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

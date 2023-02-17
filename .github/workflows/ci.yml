@@ -18,10 +18,10 @@ jobs:
           node-version: 16.x
 
       - name: Install required package deps
-        run: yarn
+        run: npm i
 
       - name: Lint package
-        run: yarn lint
+        run: npm run lint
 
       - name: Build
-        run: yarn build
+        run: npm run build
