@@ -17,7 +17,6 @@ export type AuthQuerierTypes = {
     authProvider: AuthProvider;
     recoveryCode?: string;
   };
-  saveAuthCookie: { authCookie: string };
   loginWithPaperModal: void | { email: string };
   logout: void;
   sendPaperEmailLoginOtp: { email: string };
@@ -64,12 +63,6 @@ export class Auth {
   }: AuthAndWalletRpcReturnType): Promise<AuthLoginReturnType> {
     if (storedToken.storeCookieString) {
       this.localStorage.saveAuthCookie(storedToken.cookieString);
-      await this.AuthQuerier.call({
-        procedureName: "saveAuthCookie",
-        params: {
-          authCookie: storedToken.cookieString,
-        },
-      });
     }
     const initializedUser = await this.onAuthSuccess({
       storedToken,

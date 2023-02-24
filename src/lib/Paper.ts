@@ -41,7 +41,7 @@ export class PaperEmbeddedWalletSdk {
       clientId,
       querier: this.querier,
       onAuthSuccess: async (authResult) => {
-        await this.wallet.postSetUpWallet(authResult.walletDetails);
+        await this.wallet.postWalletSetUp(authResult.walletDetails);
         return {
           user: {
             status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
@@ -77,13 +77,12 @@ export class PaperEmbeddedWalletSdk {
   async getUser(): Promise<GetUser> {
     const userStatus = await this.wallet.getUserWalletStatus();
     switch (userStatus.status) {
+      // user gets {UserWalletStatus.LOGGED_IN_NEW_DEVICE} when they log in but never complete the recovery flow and exits (close modal, refresh etc)
       case UserWalletStatus.LOGGED_IN_NEW_DEVICE:
+      // User gets {UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED} when they log in but manage to exit the client in the small window between auth completion and sending them their wallet recovery details
       case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED:
-        console.error(
-          "BAD STATE: If you see this repeatedly, please reach out to us on discord and let us know!"
-        );
-        // User clears part of their local cache somehow
-        await this.wallet.initializeWallet();
+        // in both case, we simply log them out to reset their state
+        await this.auth.logout();
         return this.getUser();
       case UserWalletStatus.LOGGED_OUT:
         return {

@@ -6,7 +6,6 @@ import {
   ClientIdWithQuerierAndChainType,
   GetUserWalletStatusFnReturnType,
   GetUserWalletStatusRpcReturnType,
-  SetUpWalletReturnType,
   SetUpWalletRpcReturnType,
   UserWalletStatus,
   WalletAddressObjectType,
@@ -20,7 +19,6 @@ export type WalletManagementTypes = {
   createWallet: void;
   setUpNewDevice: void;
   getUserStatus: void;
-  saveDeviceShare: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
   createWalletUi: void;
@@ -57,83 +55,25 @@ export class EmbeddedWallet {
     this.localStorage = new LocalStorage({ clientId });
   }
 
-  async postSetUpWallet({
+  /**
+   * @internal
+   * Used to set-up the user device in the case that they are using incognito
+   * @param {string} param.deviceShareStored the value that is saved for the user's device share.
+   * We save this into the localStorage on the site itself if we could not save it within the iframe's localStorage.
+   * This happens in incognito mostly
+   * @param {string} param.walletAddress User's wallet address
+   * @param {boolean} param.isIframeStorageEnabled Tells us if we were able to store values in the localStorage in our iframe
+   * @returns {{ walletAddress : string }} The user's wallet details
+   */
+  async postWalletSetUp({
     deviceShareStored,
     walletAddress,
     isIframeStorageEnabled,
   }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
     if (!isIframeStorageEnabled) {
       this.localStorage.saveDeviceShare(deviceShareStored);
-      await this.walletManagerQuerier.call<void>({
-        procedureName: "saveDeviceShare",
-        params: {
-          deviceShareStored,
-        },
-      });
     }
     return { walletAddress };
-  }
-
-  /**
-   * @private
-   * @returns {{walletAddress: string, initialUserStatus: UserWalletStatus}} an object containing the user's wallet address
-   */
-  private async createWallet(
-    props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails;
-    if (props.showUi) {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWalletUi",
-          params: undefined,
-          showIframe: true,
-        });
-    } else {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWallet",
-          params: undefined,
-        });
-    }
-    await this.postSetUpWallet(newWalletDetails);
-
-    return {
-      walletAddress: newWalletDetails.walletAddress,
-      initialUserStatus: UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED,
-    };
-  }
-
-  /**
-   * @private
-   * @param {Object} props options to either show or not show UI.
-   * @returns {{walletAddress: string, initialUserStatus: UserWalletStatus}} an object containing the user's wallet address
-   */
-  private async setUpNewDevice(
-    props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails: SetUpWalletRpcReturnType;
-    if (props.showUi) {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "setUpNewDeviceUi",
-          params: undefined,
-          showIframe: true,
-        });
-    } else {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "setUpNewDevice",
-          params: undefined,
-        });
-    }
-
-    await this.postSetUpWallet(newWalletDetails);
-
-    return {
-      walletAddress: newWalletDetails.walletAddress,
-      initialUserStatus: UserWalletStatus.LOGGED_IN_NEW_DEVICE,
-    };
   }
 
   /**
@@ -183,38 +123,6 @@ export class EmbeddedWallet {
       };
     }
     return userStatus;
-  }
-
-  /**
-   * @internal
-   * Use to initialize the wallet of the user.
-   * Note that you don't have to call this directly.
-   * This is called under the hood when you call {@link PaperEmbeddedWalletSdk.initializeUser}
-   * @returns {{walletAddress: string, userInitialStatus: UserWalletStatus}} an object containing the walletAddress and the initialUserStatus (user status before calling initializeWallet) of the logged in user. undefined if user is logged out.
-   */
-  async initializeWallet(): Promise<SetUpWalletReturnType | undefined> {
-    const { status, user } = await this.getUserWalletStatus();
-    switch (status) {
-      case UserWalletStatus.LOGGED_IN_NEW_DEVICE: {
-        return this.setUpNewDevice({
-          showUi: false,
-        });
-      }
-      case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
-        return this.createWallet({
-          showUi: false,
-        });
-      }
-      case UserWalletStatus.LOGGED_OUT: {
-        return;
-      }
-      case UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED: {
-        return {
-          initialUserStatus: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED,
-          walletAddress: user.walletAddress,
-        };
-      }
-    }
   }
 
   /**
