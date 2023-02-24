@@ -61,7 +61,7 @@ export class Auth {
     storedToken,
     walletDetails,
   }: AuthAndWalletRpcReturnType): Promise<AuthLoginReturnType> {
-    if (storedToken.storeCookieString) {
+    if (storedToken.shouldStoreCookieString) {
       this.localStorage.saveAuthCookie(storedToken.cookieString);
     }
     const initializedUser = await this.onAuthSuccess({
@@ -78,6 +78,7 @@ export class Auth {
    * Note that you have to either enable "Auth0" or "Custom JSON Web Token" in the [auth setting dashboard](https://withpaper.com/dashboard/auth-settings) in order to use this
    * @param {string} jwtParams.token The associate token from the oauth callback
    * @param {AuthProvider} jwtParams.provider The Auth provider that is being used
+   * @param {string} jwtParams.recoveryCode This has to be passed in if the user is not logging in for the first time in order for us to decrypt and recover the users wallet
    * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async loginWithJwtAuth({
@@ -103,14 +104,14 @@ export class Auth {
    * @example
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "YOUR_CLIENT_ID", chain: "Polygon"})
    * try {
-   *   await Paper.auth.loginWithPaperModal();
+   *   const user = await Paper.auth.loginWithPaperModal();
    *   // user is now logged in
    * } catch (e) {
    *   // User closed modal or something else went wrong during the authentication process
    *   console.error(e)
    * }
    *
-   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
+   * @returns {{user: InitializedUser}} An InitializedUser object. See {@link PaperEmbeddedWalletSdk.getUser} for more
    */
   async loginWithPaperModal(): Promise<AuthLoginReturnType> {
     const result = await this.AuthQuerier.call<AuthAndWalletRpcReturnType>({
@@ -127,10 +128,16 @@ export class Auth {
    *
    * @example
    *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
-   *  // prompts user to enter the code they received
-   *  await Paper.auth.loginWithPaperEmailOtp({ email : "you@example.com" });
+   *  try {
+   *    // prompts user to enter the code they received
+   *    const user = await Paper.auth.loginWithPaperEmailOtp({ email : "you@example.com" });
+   *    // user is now logged in
+   *  } catch (e) {
+   *    // User closed the OTP modal or something else went wrong during the authentication process
+   *    console.error(e)
+   *  }
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
-   * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
+   * @returns {{user: InitializedUser}} An InitializedUser object. See {@link PaperEmbeddedWalletSdk.getUser} for more
    */
   async loginWithPaperEmailOtp({
     email,
@@ -147,13 +154,14 @@ export class Auth {
 
   /**
    * @description
-   * Sends the users at {email} an OTP code. Which they can use to have themselves verified via {@link Auth.verifyPaperEmailLoginOtp}
+   * A headless way to send the users at {email} an OTP code.
+   * You need to then call {@link Auth.verifyPaperEmailLoginOtp} in order to complete the login process
    *
    * @example
    *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    *  // sends user an OTP code
    * try {
-   *    await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
+   *    const { success, isNewUser } = await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
    * } catch(e) {
    *    // Error Sending user's email an OTP code
    *    console.error(e);
@@ -161,14 +169,14 @@ export class Auth {
    *
    * // Then when your user is ready to verify their OTP
    * try {
-   *    const user = await Paper.auth.verifyPaperEmailLoginOtp({ email: "you@example.com", otp: "6-DIGIT_CODE_HERE" });
+   *    const user = await Paper.auth.verifyPaperEmailLoginOtp({ email: "you@example.com", otp: "6-DIGIT_CODE_HERE", recoveryCode: "Required if user is an existing user. i.e. !isNewUser"});
    * } catch(e) {
    *    // Error verifying the OTP code
    *    console.error(e)
    * }
    *
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
-   * @returns {{success: boolean}} indicating if the email was successfully sent (Note the email could still end up in the user's spam folder)
+   * @returns {{ success: boolean, isNewUser: boolean }} Success: indicating if the email was successfully sent (Note the email could still end up in the user's spam folder). IsNewUser indicates if the user is a new user to your platform
    */
   async sendPaperEmailLoginOtp({
     email,
@@ -189,6 +197,7 @@ export class Auth {
    *
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
    * @param {string} props.otp The code that the user received in their email
+   * @param {string} props.recoveryCode The code that is first sent to the user when they sign up. Required if user is an existing user. i.e. !isNewUser from return params of {@link Auth.sendPaperEmailLoginOtp}
    * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async verifyPaperEmailLoginOtp({
@@ -206,7 +215,6 @@ export class Auth {
   /**
    * @description
    * Logs any existing user out of their wallet.
-   * @throws when something goes wrong logging user out
    * @returns {{success: boolean}} true if a user is successfully logged out. false if there's no user currently logged in.
    */
   async logout(): Promise<LogoutReturnType> {

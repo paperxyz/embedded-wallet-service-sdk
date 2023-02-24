@@ -55,22 +55,23 @@ export class PaperEmbeddedWalletSdk {
   }
 
   /**
-   * Gets the various status states of the user
+   * Gets the usr if they are logged in
    * @example
    *  const user = await Paper.getUser();
-   *  switch (userStatus.status) {
-   *  case UserStatus.LOGGED_OUT: {
-   *    // User is logged out, call one of the auth methods on Paper.auth to authenticate the user
-   *    break;
-   *  }
-   *  case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
-   *    // user is logged in and wallet is all set up.
-   *    // You have access to:
-   *    userStatus.data.authDetails;
-   *    userStatus.data.walletAddress;
-   *    userStatus.data.wallet;
-   *    break;
-   *  }
+   *  switch (user.status) {
+   *     case UserStatus.LOGGED_OUT: {
+   *       // User is logged out, call one of the auth methods on Paper.auth to authenticate the user
+   *       break;
+   *     }
+   *     case UserStatus.LOGGED_IN_WALLET_INITIALIZED: {
+   *       // user is logged in and wallet is all set up.
+   *       // You have access to:
+   *       user.status;
+   *       user.authDetails;
+   *       user.walletAddress;
+   *       user.wallet;
+   *       break;
+   *     }
    *}
    * @returns {GetUser} an object to containing various information on the user statuses
    */

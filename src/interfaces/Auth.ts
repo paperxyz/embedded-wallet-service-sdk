@@ -29,7 +29,7 @@ export type AuthStoredTokenReturnType = {
 export type AuthStoredTokenWithCookieReturnType = {
   storedToken: StoredTokenType & {
     cookieString: string;
-    storeCookieString: boolean;
+    shouldStoreCookieString: boolean;
     isNewUser: boolean;
   };
 };

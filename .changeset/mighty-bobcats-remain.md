@@ -2,4 +2,4 @@
 "@paperxyz/embedded-wallet-service-sdk": patch
 ---
 
-breaking: rename the Chains type to Chain
+BREAKING: rename the Chains type to Chain

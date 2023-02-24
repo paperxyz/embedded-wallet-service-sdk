@@ -62,7 +62,8 @@ export class EmbeddedWallet {
    * We save this into the localStorage on the site itself if we could not save it within the iframe's localStorage.
    * This happens in incognito mostly
    * @param {string} param.walletAddress User's wallet address
-   * @param {boolean} param.isIframeStorageEnabled Tells us if we were able to store values in the localStorage in our iframe
+   * @param {boolean} param.isIframeStorageEnabled Tells us if we were able to store values in the localStorage in our iframe.
+   * We need to store it under the dev's domain localStorage if we weren't able to store things in the iframe
    * @returns {{ walletAddress : string }} The user's wallet details
    */
   async postWalletSetUp({
@@ -89,22 +90,22 @@ export class EmbeddedWallet {
    *  case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
    *    // User is logged in, but does not have a wallet associated with it
    *    // you also have access to the user's details
-   *    userStatus.data.authDetails;
+   *    userStatus.user.authDetails;
    *    break;
    *  }
    *  case UserWalletStatus.LOGGED_IN_NEW_DEVICE: {
    *    // User is logged in and created a wallet already, but is missing the device shard
    *    // You have access to:
-   *    userStatus.data.authDetails;
-   *    userStatus.data.walletAddress;
+   *    userStatus.user.authDetails;
+   *    userStatus.user.walletAddress;
    *    break;
    *  }
    *  case UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED: {
    *    // user is logged in and wallet is all set up.
    *    // You have access to:
-   *    userStatus.data.authDetails;
-   *    userStatus.data.walletAddress;
-   *    userStatus.data.wallet;
+   *    userStatus.user.authDetails;
+   *    userStatus.user.walletAddress;
+   *    userStatus.user.wallet;
    *    break;
    *  }
    *}
@@ -132,7 +133,7 @@ export class EmbeddedWallet {
    * // user wallet will be set to Polygon
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    * const user = await Paper.initializeUser();
-   * // user wallet is not on Mumbai
+   * // Switch the user wallet to Mumbai
    * await user.wallet.setChain({ chain: "Mumbai" });
    * @param {Chain} params.chain The chain that we are changing the user wallet too
    */
@@ -149,11 +150,13 @@ export class EmbeddedWallet {
    * Returns an Ethers.Js compatible signer that you can use in conjunction with the rest of dApp
    * @example
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
-   * const user = await Paper.initializeUser();
-   * // returns a signer on the Polygon mainnet
-   * const signer = await user.getEthersJsSigner();
-   * // returns a signer that is on the ethereum mainnet
-   * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"});
+   * const user = await Paper.getUser();
+   * if (user.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
+   *    // returns a signer on the Polygon mainnet
+   *    const signer = await user.getEthersJsSigner();
+   *    // returns a signer on the specified RPC endpoints
+   *    const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"});
+   * }
    * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
    * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
    * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperEmbeddedWalletSdk} instance
@@ -169,14 +172,5 @@ export class EmbeddedWallet {
       querier: this.walletManagerQuerier,
     });
     return signer;
-  }
-
-  /**
-   * Convenience function to get the user's wallet address
-   * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
-   * @returns {string} the wallet address of the user
-   */
-  async getAddress() {
-    return (await this.getEthersJsSigner()).getAddress();
   }
 }
