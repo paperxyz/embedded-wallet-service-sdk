@@ -2,7 +2,7 @@ import { StyleObject } from "../../interfaces/Modal";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
 import { getDefaultModalStyles } from "../../lib/Modal/styles";
 
-export type IFrameCommunicatorProps = {
+type IFrameCommunicatorProps = {
   link: string;
   iframeId: string;
   container?: HTMLElement;
@@ -44,7 +44,14 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         iframe.setAttribute("id", iframeId);
         container.appendChild(iframe);
       }
-      iframe.src = link;
+      const sdkVersion = process.env.SDK_VERSION;
+      if (!sdkVersion) {
+        throw new Error("Missing SDK_VERSION env var");
+      }
+      const hrefLink = new URL(link);
+      hrefLink.searchParams.set("sdkVersion", sdkVersion);
+      iframe.src = hrefLink.href;
+      iframe.setAttribute("data-version", sdkVersion);
       iframe.onload = this.onIframeLoadHandler(
         iframe,
         this.POST_LOAD_BUFFER_SECONDS,

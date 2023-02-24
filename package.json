@@ -10,10 +10,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "compile:lib": "tsup",
-    "dev:lib": "yarn compile:lib --env.NODE_ENV development --watch",
+    "dev:lib": "yarn compile:lib --env.NODE_ENV development --env.SDK_VERSION $npm_package_version --watch",
     "dev:types": "yarn lint -w",
     "dev": "concurrently \"yarn dev:lib\" \"yarn dev:types\"",
-    "build:lib": "yarn compile:lib --env.NODE_ENV production --minify",
+    "build:lib": "yarn compile:lib --env.NODE_ENV production --env.SDK_VERSION $npm_package_version --minify",
     "build": "yarn lint && yarn build:lib",
     "prepublish": "yarn build",
     "lint": "tsc"
@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/paperxyz/embedded-wallet-service-sdk/issues"
   },
-  "homepage": "https://github.com/paperxyz/embedded-wallet-s ervice-sdk",
+  "homepage": "https://github.com/paperxyz/embedded-wallet-service-sdk",
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
     "@types/node": "^18.7.11",
