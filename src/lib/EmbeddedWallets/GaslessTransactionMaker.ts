@@ -1,5 +1,5 @@
 import type {
-  Chains,
+  Chain,
   ClientIdWithQuerierAndChainType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import type {
@@ -15,7 +15,7 @@ export type GaslessTransactionQuerierTypes = {
       stub: string;
       args: Array<unknown>;
     };
-    chain: Chains;
+    chain: Chain;
   };
 };
 
@@ -23,7 +23,7 @@ export type GaslessTransactionQuerierTypes = {
  * @description GaslessTransactionMaker is used to execute gasless transactions from the embedded wallets
  */
 export class GaslessTransactionMaker {
-  protected chain: Chains;
+  protected chain: Chain;
   protected clientId: string;
   protected gaslessTransactionQuerier: EmbeddedWalletIframeCommunicator<GaslessTransactionQuerierTypes>;
   constructor({ chain, clientId, querier }: ClientIdWithQuerierAndChainType) {

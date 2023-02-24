@@ -2,7 +2,7 @@ import type { Networkish } from "@ethersproject/providers";
 import { getDefaultProvider } from "@ethersproject/providers";
 import { ChainToPublicRpc } from "../../constants/settings";
 import {
-  Chains,
+  Chain,
   ClientIdWithQuerierAndChainType,
   GetUserWalletStatusFnReturnType,
   GetUserWalletStatusRpcReturnType,
@@ -31,7 +31,7 @@ export type EmbeddedWalletInternalHelperType = { showUi: boolean };
 
 export class EmbeddedWallet {
   protected clientId: string;
-  protected chain: Chains;
+  protected chain: Chain;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<
     WalletManagementTypes & WalletManagementUiTypes
   >;
@@ -226,9 +226,9 @@ export class EmbeddedWallet {
    * const user = await Paper.initializeUser();
    * // user wallet is not on Mumbai
    * await user.wallet.setChain({ chain: "Mumbai" });
-   * @param {Chains} params.chain The chain that we are changing the user wallet too
+   * @param {Chain} params.chain The chain that we are changing the user wallet too
    */
-  async setChain({ chain }: { chain: Chains }): Promise<void> {
+  async setChain({ chain }: { chain: Chain }): Promise<void> {
     this.chain = chain;
     this.gasless = new GaslessTransactionMaker({
       chain,

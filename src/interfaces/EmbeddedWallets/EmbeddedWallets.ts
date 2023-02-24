@@ -3,7 +3,7 @@ import type { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommuni
 import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 
 // General Embedded wallet types
-export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum" | "Avalanche";
+export type Chain = "Polygon" | "Mumbai" | "Goerli" | "Ethereum" | "Avalanche";
 
 // Class constructor types
 // types for class constructors still a little messy right now.
@@ -13,10 +13,10 @@ export type ClientIdWithQuerierType = ClientIdConstructorType & {
   querier: EmbeddedWalletIframeCommunicator<any>;
 };
 export type ClientIdWithQuerierAndChainType = ClientIdWithQuerierType & {
-  chain: Chains;
+  chain: Chain;
 };
 export type PaperConstructorType = ClientIdConstructorType & {
-  chain: Chains;
+  chain: Chain;
   styles?: CustomizationOptionsType;
 };
 
