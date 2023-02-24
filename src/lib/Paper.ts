@@ -40,16 +40,14 @@ export class PaperEmbeddedWalletSdk {
     this.auth = new Auth({
       clientId,
       querier: this.querier,
-      onAuthSuccess: async (authDetails) => {
-        await this.wallet.initializeWallet();
+      onAuthSuccess: async (authResult) => {
+        await this.wallet.postSetUpWallet(authResult.walletDetails);
         return {
           user: {
             status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,
-            authDetails,
+            authDetails: authResult.storedToken.authDetails,
             wallet: this.wallet,
-            walletAddress: await (
-              await this.wallet.getEthersJsSigner()
-            ).getAddress(),
+            walletAddress: authResult.walletDetails.walletAddress,
           },
         };
       },

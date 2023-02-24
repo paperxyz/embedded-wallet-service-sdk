@@ -1,12 +1,12 @@
 import {
+  AuthAndWalletRpcReturnType,
   AuthLoginReturnType,
   AuthProvider,
-  AuthStoredTokenWithCookieReturnType,
 } from "../interfaces/Auth";
 import type {
-  AuthDetails,
   ClientIdWithQuerierType,
   LogoutReturnType,
+  SendEmailOtpReturnType,
 } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 import { EmbeddedWalletIframeCommunicator } from "../utils/iFrameCommunication/EmbeddedWalletIframeCommunicator";
 import { LocalStorage } from "../utils/Storage/LocalStorage";
@@ -15,12 +15,17 @@ export type AuthQuerierTypes = {
   loginWithJwtAuthCallback: {
     token: string;
     authProvider: AuthProvider;
+    recoveryCode?: string;
   };
   saveAuthCookie: { authCookie: string };
   loginWithPaperModal: void | { email: string };
   logout: void;
   sendPaperEmailLoginOtp: { email: string };
-  verifyPaperEmailLoginOtp: { email: string; otp: string };
+  verifyPaperEmailLoginOtp: {
+    email: string;
+    otp: string;
+    recoveryCode?: string;
+  };
 };
 
 export class Auth {
@@ -28,7 +33,7 @@ export class Auth {
   protected AuthQuerier: EmbeddedWalletIframeCommunicator<AuthQuerierTypes>;
   protected localStorage: LocalStorage;
   protected onAuthSuccess: (
-    authDetails: AuthDetails
+    authResults: AuthAndWalletRpcReturnType
   ) => Promise<AuthLoginReturnType>;
 
   /**
@@ -43,7 +48,9 @@ export class Auth {
     querier,
     onAuthSuccess,
   }: ClientIdWithQuerierType & {
-    onAuthSuccess: (authDetails: AuthDetails) => Promise<AuthLoginReturnType>;
+    onAuthSuccess: (
+      authDetails: AuthAndWalletRpcReturnType
+    ) => Promise<AuthLoginReturnType>;
   }) {
     this.clientId = clientId;
     this.AuthQuerier = querier;
@@ -53,7 +60,8 @@ export class Auth {
 
   private async postLogin({
     storedToken,
-  }: AuthStoredTokenWithCookieReturnType): Promise<AuthLoginReturnType> {
+    walletDetails,
+  }: AuthAndWalletRpcReturnType): Promise<AuthLoginReturnType> {
     if (storedToken.storeCookieString) {
       this.localStorage.saveAuthCookie(storedToken.cookieString);
       await this.AuthQuerier.call({
@@ -63,7 +71,10 @@ export class Auth {
         },
       });
     }
-    const initializedUser = await this.onAuthSuccess(storedToken.authDetails);
+    const initializedUser = await this.onAuthSuccess({
+      storedToken,
+      walletDetails,
+    });
     return initializedUser;
   }
 
@@ -79,18 +90,16 @@ export class Auth {
   async loginWithJwtAuth({
     token,
     authProvider,
-  }: {
-    token: string;
-    authProvider: AuthProvider;
-  }): Promise<AuthLoginReturnType> {
-    const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
-        procedureName: "loginWithJwtAuthCallback",
-        params: {
-          token,
-          authProvider,
-        },
-      });
+    recoveryCode,
+  }: AuthQuerierTypes["loginWithJwtAuthCallback"]): Promise<AuthLoginReturnType> {
+    const result = await this.AuthQuerier.call<AuthAndWalletRpcReturnType>({
+      procedureName: "loginWithJwtAuthCallback",
+      params: {
+        token,
+        authProvider,
+        recoveryCode,
+      },
+    });
     return this.postLogin(result);
   }
 
@@ -111,12 +120,11 @@ export class Auth {
    * @returns {{user: InitializedUser}} An InitializedUser object containing the user's status, wallet, authDetails, and more
    */
   async loginWithPaperModal(): Promise<AuthLoginReturnType> {
-    const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
-        procedureName: "loginWithPaperModal",
-        params: undefined,
-        showIframe: true,
-      });
+    const result = await this.AuthQuerier.call<AuthAndWalletRpcReturnType>({
+      procedureName: "loginWithPaperModal",
+      params: undefined,
+      showIframe: true,
+    });
     return this.postLogin(result);
   }
 
@@ -136,12 +144,11 @@ export class Auth {
   }: {
     email: string;
   }): Promise<AuthLoginReturnType> {
-    const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
-        procedureName: "loginWithPaperModal",
-        params: { email },
-        showIframe: true,
-      });
+    const result = await this.AuthQuerier.call<AuthAndWalletRpcReturnType>({
+      procedureName: "loginWithPaperModal",
+      params: { email },
+      showIframe: true,
+    });
     return this.postLogin(result);
   }
 
@@ -170,12 +177,15 @@ export class Auth {
    * @param {string} props.email We will send the email an OTP that needs to be entered in order for them to be logged in.
    * @returns {{success: boolean}} indicating if the email was successfully sent (Note the email could still end up in the user's spam folder)
    */
-  async sendPaperEmailLoginOtp({ email }: { email: string }) {
-    const { success } = await this.AuthQuerier.call<LogoutReturnType>({
-      procedureName: "sendPaperEmailLoginOtp",
-      params: { email },
-    });
-    return { success };
+  async sendPaperEmailLoginOtp({
+    email,
+  }: AuthQuerierTypes["sendPaperEmailLoginOtp"]) {
+    const { success, isNewUser } =
+      await this.AuthQuerier.call<SendEmailOtpReturnType>({
+        procedureName: "sendPaperEmailLoginOtp",
+        params: { email },
+      });
+    return { success, isNewUser };
   }
 
   /**
@@ -191,15 +201,12 @@ export class Auth {
   async verifyPaperEmailLoginOtp({
     email,
     otp,
-  }: {
-    email: string;
-    otp: string;
-  }) {
-    const result =
-      await this.AuthQuerier.call<AuthStoredTokenWithCookieReturnType>({
-        procedureName: "verifyPaperEmailLoginOtp",
-        params: { email, otp },
-      });
+    recoveryCode,
+  }: AuthQuerierTypes["verifyPaperEmailLoginOtp"]) {
+    const result = await this.AuthQuerier.call<AuthAndWalletRpcReturnType>({
+      procedureName: "verifyPaperEmailLoginOtp",
+      params: { email, otp, recoveryCode },
+    });
     return this.postLogin(result);
   }
 

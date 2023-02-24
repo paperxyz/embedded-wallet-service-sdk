@@ -21,7 +21,7 @@ export type PaperConstructorType = ClientIdConstructorType & {
 };
 
 // Auth Types
-export type AuthDetails = { email?: string };
+export type AuthDetails = { email: string };
 
 export type InitializedUser = {
   status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
@@ -50,8 +50,10 @@ export type SetUpWalletReturnType = WalletAddressObjectType & {
 };
 export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
   deviceShareStored: string;
+  isIframeStorageEnabled: boolean;
 };
 
+export type SendEmailOtpReturnType = { success: boolean; isNewUser: boolean };
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 

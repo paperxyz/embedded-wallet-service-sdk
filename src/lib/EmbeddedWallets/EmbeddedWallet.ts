@@ -57,17 +57,20 @@ export class EmbeddedWallet {
     this.localStorage = new LocalStorage({ clientId });
   }
 
-  private async postSetUpWallet({
+  async postSetUpWallet({
     deviceShareStored,
     walletAddress,
+    isIframeStorageEnabled,
   }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
-    this.localStorage.saveAuthCookie(deviceShareStored);
-    await this.walletManagerQuerier.call<void>({
-      procedureName: "saveDeviceShare",
-      params: {
-        deviceShareStored,
-      },
-    });
+    if (!isIframeStorageEnabled) {
+      this.localStorage.saveDeviceShare(deviceShareStored);
+      await this.walletManagerQuerier.call<void>({
+        procedureName: "saveDeviceShare",
+        params: {
+          deviceShareStored,
+        },
+      });
+    }
     return { walletAddress };
   }
 
