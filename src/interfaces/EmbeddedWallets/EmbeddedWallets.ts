@@ -3,7 +3,7 @@ import type { EmbeddedWalletIframeCommunicator } from "../../utils/iFrameCommuni
 import { CustomizationOptionsType } from "../utils/IframeCommunicator";
 
 // General Embedded wallet types
-export type Chains = "Polygon" | "Mumbai" | "Goerli" | "Ethereum" | "Avalanche";
+export type Chain = "Polygon" | "Mumbai" | "Goerli" | "Ethereum" | "Avalanche";
 
 // Class constructor types
 // types for class constructors still a little messy right now.
@@ -13,15 +13,15 @@ export type ClientIdWithQuerierType = ClientIdConstructorType & {
   querier: EmbeddedWalletIframeCommunicator<any>;
 };
 export type ClientIdWithQuerierAndChainType = ClientIdWithQuerierType & {
-  chain: Chains;
+  chain: Chain;
 };
 export type PaperConstructorType = ClientIdConstructorType & {
-  chain: Chains;
+  chain: Chain;
   styles?: CustomizationOptionsType;
 };
 
 // Auth Types
-export type AuthDetails = { email?: string };
+export type AuthDetails = { email: string };
 
 export type InitializedUser = {
   status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
@@ -50,8 +50,10 @@ export type SetUpWalletReturnType = WalletAddressObjectType & {
 };
 export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
   deviceShareStored: string;
+  isIframeStorageEnabled: boolean;
 };
 
+export type SendEmailOtpReturnType = { success: boolean; isNewUser: boolean };
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 

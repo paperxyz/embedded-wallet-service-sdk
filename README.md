@@ -36,10 +36,7 @@ const Paper = new PaperEmbeddedWalletSdk({
 });
 
 // log the user in
-await Paper.auth.loginWithOtp();
-
-// create or recover the user's wallet if needed
-const user = await Paper.initializeUser();
+const user = await Paper.auth.loginWithPaperModal();
 
 // Execute a transaction without the user wallet needing gas money
 const { transactionHash } = await user.wallet.gasless.callContract({

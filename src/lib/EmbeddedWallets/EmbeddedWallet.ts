@@ -2,11 +2,10 @@ import type { Networkish } from "@ethersproject/providers";
 import { getDefaultProvider } from "@ethersproject/providers";
 import { ChainToPublicRpc } from "../../constants/settings";
 import {
-  Chains,
+  Chain,
   ClientIdWithQuerierAndChainType,
   GetUserWalletStatusFnReturnType,
   GetUserWalletStatusRpcReturnType,
-  SetUpWalletReturnType,
   SetUpWalletRpcReturnType,
   UserWalletStatus,
   WalletAddressObjectType,
@@ -20,7 +19,6 @@ export type WalletManagementTypes = {
   createWallet: void;
   setUpNewDevice: void;
   getUserStatus: void;
-  saveDeviceShare: { deviceShareStored: string };
 };
 export type WalletManagementUiTypes = {
   createWalletUi: void;
@@ -31,7 +29,7 @@ export type EmbeddedWalletInternalHelperType = { showUi: boolean };
 
 export class EmbeddedWallet {
   protected clientId: string;
-  protected chain: Chains;
+  protected chain: Chain;
   protected walletManagerQuerier: EmbeddedWalletIframeCommunicator<
     WalletManagementTypes & WalletManagementUiTypes
   >;
@@ -57,80 +55,26 @@ export class EmbeddedWallet {
     this.localStorage = new LocalStorage({ clientId });
   }
 
-  private async postSetUpWallet({
+  /**
+   * @internal
+   * Used to set-up the user device in the case that they are using incognito
+   * @param {string} param.deviceShareStored the value that is saved for the user's device share.
+   * We save this into the localStorage on the site itself if we could not save it within the iframe's localStorage.
+   * This happens in incognito mostly
+   * @param {string} param.walletAddress User's wallet address
+   * @param {boolean} param.isIframeStorageEnabled Tells us if we were able to store values in the localStorage in our iframe.
+   * We need to store it under the dev's domain localStorage if we weren't able to store things in the iframe
+   * @returns {{ walletAddress : string }} The user's wallet details
+   */
+  async postWalletSetUp({
     deviceShareStored,
     walletAddress,
+    isIframeStorageEnabled,
   }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
-    this.localStorage.saveAuthCookie(deviceShareStored);
-    await this.walletManagerQuerier.call<void>({
-      procedureName: "saveDeviceShare",
-      params: {
-        deviceShareStored,
-      },
-    });
+    if (!isIframeStorageEnabled) {
+      this.localStorage.saveDeviceShare(deviceShareStored);
+    }
     return { walletAddress };
-  }
-
-  /**
-   * @private
-   * @returns {{walletAddress: string, initialUserStatus: UserWalletStatus}} an object containing the user's wallet address
-   */
-  private async createWallet(
-    props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails;
-    if (props.showUi) {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWalletUi",
-          params: undefined,
-          showIframe: true,
-        });
-    } else {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "createWallet",
-          params: undefined,
-        });
-    }
-    await this.postSetUpWallet(newWalletDetails);
-
-    return {
-      walletAddress: newWalletDetails.walletAddress,
-      initialUserStatus: UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED,
-    };
-  }
-
-  /**
-   * @private
-   * @param {Object} props options to either show or not show UI.
-   * @returns {{walletAddress: string, initialUserStatus: UserWalletStatus}} an object containing the user's wallet address
-   */
-  private async setUpNewDevice(
-    props: EmbeddedWalletInternalHelperType
-  ): Promise<SetUpWalletReturnType | undefined> {
-    let newWalletDetails: SetUpWalletRpcReturnType;
-    if (props.showUi) {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "setUpNewDeviceUi",
-          params: undefined,
-          showIframe: true,
-        });
-    } else {
-      newWalletDetails =
-        await this.walletManagerQuerier.call<SetUpWalletRpcReturnType>({
-          procedureName: "setUpNewDevice",
-          params: undefined,
-        });
-    }
-
-    await this.postSetUpWallet(newWalletDetails);
-
-    return {
-      walletAddress: newWalletDetails.walletAddress,
-      initialUserStatus: UserWalletStatus.LOGGED_IN_NEW_DEVICE,
-    };
   }
 
   /**
@@ -146,22 +90,22 @@ export class EmbeddedWallet {
    *  case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
    *    // User is logged in, but does not have a wallet associated with it
    *    // you also have access to the user's details
-   *    userStatus.data.authDetails;
+   *    userStatus.user.authDetails;
    *    break;
    *  }
    *  case UserWalletStatus.LOGGED_IN_NEW_DEVICE: {
    *    // User is logged in and created a wallet already, but is missing the device shard
    *    // You have access to:
-   *    userStatus.data.authDetails;
-   *    userStatus.data.walletAddress;
+   *    userStatus.user.authDetails;
+   *    userStatus.user.walletAddress;
    *    break;
    *  }
    *  case UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED: {
    *    // user is logged in and wallet is all set up.
    *    // You have access to:
-   *    userStatus.data.authDetails;
-   *    userStatus.data.walletAddress;
-   *    userStatus.data.wallet;
+   *    userStatus.user.authDetails;
+   *    userStatus.user.walletAddress;
+   *    userStatus.user.wallet;
    *    break;
    *  }
    *}
@@ -183,49 +127,17 @@ export class EmbeddedWallet {
   }
 
   /**
-   * @internal
-   * Use to initialize the wallet of the user.
-   * Note that you don't have to call this directly.
-   * This is called under the hood when you call {@link PaperEmbeddedWalletSdk.initializeUser}
-   * @returns {{walletAddress: string, userInitialStatus: UserWalletStatus}} an object containing the walletAddress and the initialUserStatus (user status before calling initializeWallet) of the logged in user. undefined if user is logged out.
-   */
-  async initializeWallet(): Promise<SetUpWalletReturnType | undefined> {
-    const { status, user } = await this.getUserWalletStatus();
-    switch (status) {
-      case UserWalletStatus.LOGGED_IN_NEW_DEVICE: {
-        return this.setUpNewDevice({
-          showUi: false,
-        });
-      }
-      case UserWalletStatus.LOGGED_IN_WALLET_UNINITIALIZED: {
-        return this.createWallet({
-          showUi: false,
-        });
-      }
-      case UserWalletStatus.LOGGED_OUT: {
-        return;
-      }
-      case UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED: {
-        return {
-          initialUserStatus: UserWalletStatus.LOGGED_IN_WALLET_INITIALIZED,
-          walletAddress: user.walletAddress,
-        };
-      }
-    }
-  }
-
-  /**
    * @description
    * Switches the chain that the user wallet is currently on.
    * @example
    * // user wallet will be set to Polygon
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    * const user = await Paper.initializeUser();
-   * // user wallet is not on Mumbai
+   * // Switch the user wallet to Mumbai
    * await user.wallet.setChain({ chain: "Mumbai" });
-   * @param {Chains} params.chain The chain that we are changing the user wallet too
+   * @param {Chain} params.chain The chain that we are changing the user wallet too
    */
-  async setChain({ chain }: { chain: Chains }): Promise<void> {
+  async setChain({ chain }: { chain: Chain }): Promise<void> {
     this.chain = chain;
     this.gasless = new GaslessTransactionMaker({
       chain,
@@ -238,11 +150,13 @@ export class EmbeddedWallet {
    * Returns an Ethers.Js compatible signer that you can use in conjunction with the rest of dApp
    * @example
    * const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
-   * const user = await Paper.initializeUser();
-   * // returns a signer on the Polygon mainnet
-   * const signer = await user.getEthersJsSigner();
-   * // returns a signer that is on the ethereum mainnet
-   * const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"});
+   * const user = await Paper.getUser();
+   * if (user.status === UserStatus.LOGGED_IN_WALLET_INITIALIZED) {
+   *    // returns a signer on the Polygon mainnet
+   *    const signer = await user.getEthersJsSigner();
+   *    // returns a signer on the specified RPC endpoints
+   *    const signer = await user.getEthersJsSigner({rpcEndpoint: "https://eth-rpc.gateway.pokt.network"});
+   * }
    * @param {Networkish} network.rpcEndpoint the rpc url where calls will be routed through
    * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
    * @returns A signer that is compatible with Ether.js. Defaults to the public rpc on the chain specified when initializing the {@link PaperEmbeddedWalletSdk} instance
@@ -258,14 +172,5 @@ export class EmbeddedWallet {
       querier: this.walletManagerQuerier,
     });
     return signer;
-  }
-
-  /**
-   * Convenience function to get the user's wallet address
-   * @throws If attempting to call the function without the user wallet initialize on their current device. This should never happen if call {@link PaperEmbeddedWalletSdk.initializeUser} before accessing this function
-   * @returns {string} the wallet address of the user
-   */
-  async getAddress() {
-    return (await this.getEthersJsSigner()).getAddress();
   }
 }

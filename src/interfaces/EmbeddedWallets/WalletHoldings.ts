@@ -1,7 +1,7 @@
-import { Chains } from "./EmbeddedWallets";
+import { Chain } from "./EmbeddedWallets";
 
 export type WalletHoldingInputType = {
-  chain: Chains;
+  chain: Chain;
   limit: number;
   offset: number;
 };

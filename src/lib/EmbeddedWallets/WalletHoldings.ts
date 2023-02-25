@@ -1,5 +1,5 @@
 import {
-  Chains,
+  Chain,
   ClientIdWithQuerierAndChainType,
 } from "../../interfaces/EmbeddedWallets/EmbeddedWallets";
 import {
@@ -17,7 +17,7 @@ export type WalletHoldingQueryTypes = {
  * @description WalletHoldings responsible for all the read related methods that the developers might want to do with EmbeddedWallet
  */
 export class WalletHoldings {
-  protected chain: Chains;
+  protected chain: Chain;
   protected walletHoldingQuerier: EmbeddedWalletIframeCommunicator<WalletHoldingQueryTypes>;
 
   constructor({

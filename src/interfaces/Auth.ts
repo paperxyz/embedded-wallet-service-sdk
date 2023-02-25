@@ -1,6 +1,7 @@
 import {
   AuthDetails,
   InitializedUser,
+  SetUpWalletRpcReturnType,
 } from "./EmbeddedWallets/EmbeddedWallets";
 
 export enum AuthProvider {
@@ -28,8 +29,12 @@ export type AuthStoredTokenReturnType = {
 export type AuthStoredTokenWithCookieReturnType = {
   storedToken: StoredTokenType & {
     cookieString: string;
-    storeCookieString: boolean;
+    shouldStoreCookieString: boolean;
+    isNewUser: boolean;
   };
+};
+export type AuthAndWalletRpcReturnType = AuthStoredTokenWithCookieReturnType & {
+  walletDetails: SetUpWalletRpcReturnType;
 };
 
 export type AuthLoginReturnType = { user: InitializedUser };

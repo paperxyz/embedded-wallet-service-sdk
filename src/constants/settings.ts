@@ -1,4 +1,4 @@
-import { Chains } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
+import { Chain } from "../interfaces/EmbeddedWallets/EmbeddedWallets";
 
 const isDev = (): boolean => {
   return !!(
@@ -48,7 +48,7 @@ export const DEVICE_SHARE_LOCAL_STORAGE_PREFIX = "a";
 export const DEVICE_SHARE_LOCAL_STORAGE_NAME = (clientId: string) =>
   `${DEVICE_SHARE_LOCAL_STORAGE_PREFIX}-${clientId}`;
 
-export const ChainToPublicRpc: Record<Chains, string> = {
+export const ChainToPublicRpc: Record<Chain, string> = {
   Ethereum: "https://rpc.ankr.com/eth",
   Goerli: "https://eth-goerli.g.alchemy.com/v2/demo",
   Mumbai: "https://rpc-mumbai.maticvigil.com",
