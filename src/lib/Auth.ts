@@ -161,7 +161,7 @@ export class Auth {
    *  const Paper = new PaperEmbeddedWalletSdk({clientId: "", chain: "Polygon"});
    *  // sends user an OTP code
    * try {
-   *    const { success, isNewUser } = await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
+   *    const { isNewUser } = await Paper.auth.sendPaperEmailLoginOtp({ email : "you@example.com" });
    * } catch(e) {
    *    // Error Sending user's email an OTP code
    *    console.error(e);
@@ -181,12 +181,11 @@ export class Auth {
   async sendPaperEmailLoginOtp({
     email,
   }: AuthQuerierTypes["sendPaperEmailLoginOtp"]) {
-    const { success, isNewUser } =
-      await this.AuthQuerier.call<SendEmailOtpReturnType>({
-        procedureName: "sendPaperEmailLoginOtp",
-        params: { email },
-      });
-    return { success, isNewUser };
+    const { isNewUser } = await this.AuthQuerier.call<SendEmailOtpReturnType>({
+      procedureName: "sendPaperEmailLoginOtp",
+      params: { email },
+    });
+    return { isNewUser };
   }
 
   /**
