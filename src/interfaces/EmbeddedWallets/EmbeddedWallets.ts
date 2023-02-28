@@ -53,7 +53,7 @@ export type SetUpWalletRpcReturnType = WalletAddressObjectType & {
   isIframeStorageEnabled: boolean;
 };
 
-export type SendEmailOtpReturnType = { success: boolean; isNewUser: boolean };
+export type SendEmailOtpReturnType = { isNewUser: boolean };
 export type LogoutReturnType = { success: boolean };
 export type GetAuthDetailsReturnType = { authDetails?: AuthDetails };
 
