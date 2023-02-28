@@ -1,5 +1,23 @@
 # @paperxyz/embedded-wallet-service-sdk
 
+## 0.0.17
+
+### Patch Changes
+
+- 4543071: feat: move ews to full non-custodial model
+- bb3930a: docs: update inline docs to reflect current SDK interface
+
+  types: Developer's can now always expect `email` to be returned in the `InitializedUser.authDetails` object
+
+  BREAKING (internal): rename `storeCookieString` to `shouldStoreCookieString` in `AuthStoredTokenWithCookieReturnType`.
+
+  BREAKING: remove `getAddress` function in `EmbeddedWallet`. Developer's already have access to user's wallet address from the `InitializedUser` object that is returned from the auth methods like `Paper.auth.loginWithPaperModal()`.
+
+  BREAKING: `recoveryCode` param is now required in `loginWithHwtAuth` and `verifyPaperEmailLoginOtp` functions when the user is an existing user.
+
+- af3a9d7: breaking: remove `success` from `sendPaperEmailLoginOtp` return type
+- 7b3a663: BREAKING: rename the Chains type to Chain
+
 ## 0.0.16
 
 ### Patch Changes
