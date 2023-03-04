@@ -48,4 +48,4 @@ const { transactionHash } = await user.wallet.gasless.callContract({
 
 ## Contributing
 
-Please review our guidelines(CONTRIBUTING.md) for more details.
+Please review our [guidelines](CONTRIBUTING.md) for more details.
