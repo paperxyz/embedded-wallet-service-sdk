@@ -21,7 +21,7 @@ export type PaperConstructorType = ClientIdConstructorType & {
 };
 
 // Auth Types
-export type AuthDetails = { email: string };
+export type AuthDetails = { email: string; userWalletId: string };
 
 export type InitializedUser = {
   status: UserStatus.LOGGED_IN_WALLET_INITIALIZED;
