@@ -1,5 +1,11 @@
 # @paperxyz/embedded-wallet-service-sdk
 
+## 0.0.18
+
+### Patch Changes
+
+- 80ea5d7: feat: add `userWalletId` to user's `AuthDetails` type
+
 ## 0.0.17
 
 ### Patch Changes
