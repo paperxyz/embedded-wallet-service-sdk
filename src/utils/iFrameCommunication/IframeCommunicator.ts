@@ -1,3 +1,7 @@
+import {
+  EMBEDDED_WALLET_PATH,
+  getPaperOriginUrl,
+} from "../../constants/settings";
 import { StyleObject } from "../../interfaces/Modal";
 import type { MessageType } from "../../interfaces/utils/IframeCommunicator";
 import { getDefaultModalStyles } from "../../lib/Modal/styles";
@@ -98,7 +102,7 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
             eventType: INIT_IFRAME_EVENT,
             data: await this.onIframeLoadedInitVariables(),
           },
-          "*",
+          `${getPaperOriginUrl()}${EMBEDDED_WALLET_PATH}`,
           [channel.port2]
         );
       });
