@@ -183,12 +183,13 @@ export class Auth {
    */
   async sendPaperEmailLoginOtp({
     email,
-  }: AuthQuerierTypes["sendPaperEmailLoginOtp"]) {
-    const { isNewUser } = await this.AuthQuerier.call<SendEmailOtpReturnType>({
-      procedureName: "sendPaperEmailLoginOtp",
-      params: { email },
-    });
-    return { isNewUser };
+  }: AuthQuerierTypes["sendPaperEmailLoginOtp"]): Promise<SendEmailOtpReturnType> {
+    const { isNewUser, isNewDevice } =
+      await this.AuthQuerier.call<SendEmailOtpReturnType>({
+        procedureName: "sendPaperEmailLoginOtp",
+        params: { email },
+      });
+    return { isNewUser, isNewDevice };
   }
 
   /**

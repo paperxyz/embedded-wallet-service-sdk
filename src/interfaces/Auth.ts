@@ -29,7 +29,6 @@ export type AuthStoredTokenWithCookieReturnType = {
     cookieString: string;
     shouldStoreCookieString: boolean;
     isNewUser: boolean;
-    isNewDevice: boolean;
   };
 };
 export type AuthAndWalletRpcReturnType = AuthStoredTokenWithCookieReturnType & {
