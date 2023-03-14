@@ -62,7 +62,10 @@ export class Auth {
     walletDetails,
   }: AuthAndWalletRpcReturnType): Promise<AuthLoginReturnType> {
     if (storedToken.shouldStoreCookieString) {
-      this.localStorage.saveAuthCookie(storedToken.cookieString);
+      this.localStorage.saveAuthCookie(
+        storedToken.cookieString,
+        storedToken.authDetails.userWalletId
+      );
     }
     const initializedUser = await this.onAuthSuccess({
       storedToken,
@@ -222,11 +225,9 @@ export class Auth {
       params: undefined,
     });
     const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
-    const isRemoveLocalDeviceShare =
-      await this.localStorage.removeDeviceShare();
 
     return {
-      success: success || isRemoveAuthCookie || isRemoveLocalDeviceShare,
+      success: success || isRemoveAuthCookie,
     };
   }
 }

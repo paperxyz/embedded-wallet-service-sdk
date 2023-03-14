@@ -1,6 +1,7 @@
 import {
   AUTH_TOKEN_LOCAL_STORAGE_NAME,
   DEVICE_SHARE_LOCAL_STORAGE_NAME,
+  USER_ID_LOCAL_STORAGE_NAME,
 } from "../../constants/settings";
 
 const data = new Map<string, string>();
@@ -38,23 +39,52 @@ export class LocalStorage {
     return false;
   }
 
-  async saveAuthCookie(cookie: string): Promise<void> {
-    this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId), cookie);
+  async saveAuthCookie(cookie: string, userId: string): Promise<void> {
+    this.setItem(USER_ID_LOCAL_STORAGE_NAME, userId);
+    this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId), cookie);
   }
   async getAuthCookie(): Promise<string | null> {
-    return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
+    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
+    if (userId) {
+      return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId));
+    }
+    return null;
   }
   async removeAuthCookie(): Promise<boolean> {
-    return this.removeItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
+    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
+
+    if (userId) {
+      return this.removeItem(
+        AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId)
+      );
+    }
+    return false;
   }
 
-  async saveDeviceShare(share: string): Promise<void> {
-    this.setItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId), share);
+  async saveDeviceShare(share: string, userId: string): Promise<void> {
+    this.setItem(USER_ID_LOCAL_STORAGE_NAME, userId);
+    this.setItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId), share);
   }
   async getDeviceShare(): Promise<string | null> {
-    return this.getItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId));
+    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
+    if (userId) {
+      return this.getItem(
+        DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId)
+      );
+    }
+    return null;
   }
   async removeDeviceShare(): Promise<boolean> {
-    return this.removeItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId));
+    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
+    if (userId) {
+      return this.removeItem(
+        DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId)
+      );
+    }
+    return false;
+  }
+
+  async removeUserId(): Promise<boolean> {
+    return this.removeItem(USER_ID_LOCAL_STORAGE_NAME);
   }
 }
