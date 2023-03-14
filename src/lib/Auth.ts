@@ -62,10 +62,7 @@ export class Auth {
     walletDetails,
   }: AuthAndWalletRpcReturnType): Promise<AuthLoginReturnType> {
     if (storedToken.shouldStoreCookieString) {
-      this.localStorage.saveAuthCookie(
-        storedToken.cookieString,
-        storedToken.authDetails.userWalletId
-      );
+      this.localStorage.saveAuthCookie(storedToken.cookieString);
     }
     const initializedUser = await this.onAuthSuccess({
       storedToken,

@@ -39,26 +39,14 @@ export class LocalStorage {
     return false;
   }
 
-  async saveAuthCookie(cookie: string, userId: string): Promise<void> {
-    this.setItem(USER_ID_LOCAL_STORAGE_NAME, userId);
-    this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId), cookie);
+  async saveAuthCookie(cookie: string): Promise<void> {
+    this.setItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId), cookie);
   }
   async getAuthCookie(): Promise<string | null> {
-    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
-    if (userId) {
-      return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId));
-    }
-    return null;
+    return this.getItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
   }
   async removeAuthCookie(): Promise<boolean> {
-    const userId = await this.getItem(USER_ID_LOCAL_STORAGE_NAME);
-
-    if (userId) {
-      return this.removeItem(
-        AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId, userId)
-      );
-    }
-    return false;
+    return this.removeItem(AUTH_TOKEN_LOCAL_STORAGE_NAME(this.clientId));
   }
 
   async saveDeviceShare(share: string, userId: string): Promise<void> {

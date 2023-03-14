@@ -42,17 +42,16 @@ export const EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH = `${EMBEDDED_WALLET_PATH
 
 export const USER_ID_LOCAL_STORAGE_NAME = "paperEwsWalletUserId";
 export const AUTH_TOKEN_LOCAL_STORAGE_PREFIX = "walletToken";
-export const AUTH_TOKEN_LOCAL_STORAGE_NAME = (
-  clientId: string,
-  userId: string
-) => {
-  return `${AUTH_TOKEN_LOCAL_STORAGE_PREFIX}-${clientId}-${userId}`;
+export const AUTH_TOKEN_LOCAL_STORAGE_NAME = (clientId: string) => {
+  return `${AUTH_TOKEN_LOCAL_STORAGE_PREFIX}-${clientId}`;
 };
 export const DEVICE_SHARE_LOCAL_STORAGE_PREFIX = "a";
 export const DEVICE_SHARE_LOCAL_STORAGE_NAME = (
   clientId: string,
   userId: string
 ) => `${DEVICE_SHARE_LOCAL_STORAGE_PREFIX}-${clientId}-${userId}`;
+export const DEVICE_SHARE_LOCAL_STORAGE_NAME_DEPRECATED = (clientId: string) =>
+  `${DEVICE_SHARE_LOCAL_STORAGE_PREFIX}-${clientId}`;
 
 export const ChainToPublicRpc: Record<Chain, string> = {
   Ethereum: "https://rpc.ankr.com/eth",
