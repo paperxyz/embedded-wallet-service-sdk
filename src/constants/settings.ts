@@ -40,7 +40,7 @@ export const EMBEDDED_WALLET_OTP_PATH = `${EMBEDDED_WALLET_PATH}/login-with-otp`
 export const EMBEDDED_WALLET_CREATE_WALLET_UI_PATH = `${EMBEDDED_WALLET_PATH}/create-new-wallet-ui`;
 export const EMBEDDED_WALLET_SET_UP_NEW_DEVICE_UI_PATH = `${EMBEDDED_WALLET_PATH}/set-up-new-device-ui`;
 
-export const USER_ID_LOCAL_STORAGE_NAME = (clientId: string) =>
+export const WALLET_USER_ID_LOCAL_STORAGE_NAME = (clientId: string) =>
   `paperEwsWalletUserId-${clientId}`;
 export const AUTH_TOKEN_LOCAL_STORAGE_PREFIX = "walletToken";
 export const AUTH_TOKEN_LOCAL_STORAGE_NAME = (clientId: string) => {

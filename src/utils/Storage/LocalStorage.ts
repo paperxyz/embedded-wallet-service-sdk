@@ -1,7 +1,7 @@
 import {
   AUTH_TOKEN_LOCAL_STORAGE_NAME,
   DEVICE_SHARE_LOCAL_STORAGE_NAME,
-  USER_ID_LOCAL_STORAGE_NAME,
+  WALLET_USER_ID_LOCAL_STORAGE_NAME,
 } from "../../constants/settings";
 
 const data = new Map<string, string>();
@@ -50,13 +50,14 @@ export class LocalStorage {
   }
 
   async saveDeviceShare(share: string, userId: string): Promise<void> {
-    this.setItem(USER_ID_LOCAL_STORAGE_NAME(this.clientId), userId);
-    this.setItem(DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId), share);
+    await this.saveWalletUserId(userId);
+    await this.setItem(
+      DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId),
+      share
+    );
   }
   async getDeviceShare(): Promise<string | null> {
-    const userId = await this.getItem(
-      USER_ID_LOCAL_STORAGE_NAME(this.clientId)
-    );
+    const userId = await this.getWalletUserId();
     if (userId) {
       return this.getItem(
         DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId)
@@ -65,9 +66,7 @@ export class LocalStorage {
     return null;
   }
   async removeDeviceShare(): Promise<boolean> {
-    const userId = await this.getItem(
-      USER_ID_LOCAL_STORAGE_NAME(this.clientId)
-    );
+    const userId = await this.getWalletUserId();
     if (userId) {
       return this.removeItem(
         DEVICE_SHARE_LOCAL_STORAGE_NAME(this.clientId, userId)
@@ -76,7 +75,13 @@ export class LocalStorage {
     return false;
   }
 
-  async removeUserId(): Promise<boolean> {
-    return this.removeItem(USER_ID_LOCAL_STORAGE_NAME(this.clientId));
+  async getWalletUserId(): Promise<string | null> {
+    return this.getItem(WALLET_USER_ID_LOCAL_STORAGE_NAME(this.clientId));
+  }
+  async saveWalletUserId(userId: string): Promise<void> {
+    this.setItem(WALLET_USER_ID_LOCAL_STORAGE_NAME(this.clientId), userId);
+  }
+  async removeWalletUserId(): Promise<boolean> {
+    return this.removeItem(WALLET_USER_ID_LOCAL_STORAGE_NAME(this.clientId));
   }
 }

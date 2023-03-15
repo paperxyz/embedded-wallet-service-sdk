@@ -223,9 +223,10 @@ export class Auth {
       params: undefined,
     });
     const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
+    const isRemoveUserId = await this.localStorage.removeWalletUserId();
 
     return {
-      success: success || isRemoveAuthCookie,
+      success: success || isRemoveAuthCookie || isRemoveUserId,
     };
   }
 }
