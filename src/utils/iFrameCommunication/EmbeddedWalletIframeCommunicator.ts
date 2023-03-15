@@ -33,6 +33,7 @@ export class EmbeddedWalletIframeCommunicator<
     return {
       authCookie: await localStorage.getAuthCookie(),
       deviceShareStored: await localStorage.getDeviceShare(),
+      walletUserId: await localStorage.getWalletUserId(),
       clientId: this.clientId,
     };
   }

@@ -15,15 +15,13 @@ export type GetSocialLoginClientIdReturnType = {
   clientId: string;
 };
 
+// TODO: Clean up tech debt of random type Objects
+// E.g. StoredTokenType is really not used anywhere but it exists as this object for legacy reason
 export type StoredTokenType = {
   jwtToken: string;
   authProvider: AuthProvider;
   authDetails: AuthDetails;
   developerClientId: string;
-};
-
-export type AuthStoredTokenReturnType = {
-  storedToken: StoredTokenType;
 };
 
 export type AuthStoredTokenWithCookieReturnType = {

@@ -41,7 +41,10 @@ export class PaperEmbeddedWalletSdk {
       clientId,
       querier: this.querier,
       onAuthSuccess: async (authResult) => {
-        await this.wallet.postWalletSetUp(authResult.walletDetails);
+        await this.wallet.postWalletSetUp({
+          ...authResult.walletDetails,
+          walletUserId: authResult.storedToken.authDetails.userWalletId,
+        });
         return {
           user: {
             status: UserStatus.LOGGED_IN_WALLET_INITIALIZED,

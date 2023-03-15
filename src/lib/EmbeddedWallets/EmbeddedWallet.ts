@@ -70,9 +70,12 @@ export class EmbeddedWallet {
     deviceShareStored,
     walletAddress,
     isIframeStorageEnabled,
-  }: SetUpWalletRpcReturnType): Promise<WalletAddressObjectType> {
+    walletUserId,
+  }: SetUpWalletRpcReturnType & {
+    walletUserId: string;
+  }): Promise<WalletAddressObjectType> {
     if (!isIframeStorageEnabled) {
-      this.localStorage.saveDeviceShare(deviceShareStored);
+      this.localStorage.saveDeviceShare(deviceShareStored, walletUserId);
     }
     return { walletAddress };
   }

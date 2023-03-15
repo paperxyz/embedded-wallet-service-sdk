@@ -180,12 +180,13 @@ export class Auth {
    */
   async sendPaperEmailLoginOtp({
     email,
-  }: AuthQuerierTypes["sendPaperEmailLoginOtp"]) {
-    const { isNewUser } = await this.AuthQuerier.call<SendEmailOtpReturnType>({
-      procedureName: "sendPaperEmailLoginOtp",
-      params: { email },
-    });
-    return { isNewUser };
+  }: AuthQuerierTypes["sendPaperEmailLoginOtp"]): Promise<SendEmailOtpReturnType> {
+    const { isNewUser, isNewDevice } =
+      await this.AuthQuerier.call<SendEmailOtpReturnType>({
+        procedureName: "sendPaperEmailLoginOtp",
+        params: { email },
+      });
+    return { isNewUser, isNewDevice };
   }
 
   /**
@@ -222,11 +223,10 @@ export class Auth {
       params: undefined,
     });
     const isRemoveAuthCookie = await this.localStorage.removeAuthCookie();
-    const isRemoveLocalDeviceShare =
-      await this.localStorage.removeDeviceShare();
+    const isRemoveUserId = await this.localStorage.removeWalletUserId();
 
     return {
-      success: success || isRemoveAuthCookie || isRemoveLocalDeviceShare,
+      success: success || isRemoveAuthCookie || isRemoveUserId,
     };
   }
 }
