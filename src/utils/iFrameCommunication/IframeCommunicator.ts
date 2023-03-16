@@ -37,7 +37,16 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
   }: IFrameCommunicatorProps) {
     // Creating the IFrame element for communication
     let iframe = document.getElementById(iframeId) as HTMLIFrameElement | null;
-    if (!iframe || iframe.src != link) {
+    const hrefLink = new URL(link);
+    const sdkVersion = process.env.SDK_VERSION;
+    if (!sdkVersion) {
+      throw new Error("Missing SDK_VERSION env var");
+    }
+    hrefLink.searchParams.set("sdkVersion", sdkVersion);
+    if (!iframe || iframe.src != hrefLink.href) {
+      // ! Do not update the hrefLink here or it'll cause multiple re-renders
+      console.log("link", link);
+      console.log("iframe.src", iframe?.src);
       if (!iframe) {
         iframe = document.createElement("iframe");
         const mergedIframeStyles = {
@@ -48,12 +57,6 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
         iframe.setAttribute("id", iframeId);
         container.appendChild(iframe);
       }
-      const sdkVersion = process.env.SDK_VERSION;
-      if (!sdkVersion) {
-        throw new Error("Missing SDK_VERSION env var");
-      }
-      const hrefLink = new URL(link);
-      hrefLink.searchParams.set("sdkVersion", sdkVersion);
       iframe.src = hrefLink.href;
       iframe.setAttribute("data-version", sdkVersion);
       iframe.onload = this.onIframeLoadHandler(
