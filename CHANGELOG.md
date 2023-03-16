@@ -1,5 +1,11 @@
 # @paperxyz/embedded-wallet-service-sdk
 
+## 0.0.20
+
+### Patch Changes
+
+- 53a17f8: perf: cache calls for load times speed up
+
 ## 0.0.19
 
 ### Patch Changes
