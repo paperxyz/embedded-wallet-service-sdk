@@ -45,8 +45,6 @@ export class IframeCommunicator<T extends { [key: string]: any }> {
     hrefLink.searchParams.set("sdkVersion", sdkVersion);
     if (!iframe || iframe.src != hrefLink.href) {
       // ! Do not update the hrefLink here or it'll cause multiple re-renders
-      console.log("link", link);
-      console.log("iframe.src", iframe?.src);
       if (!iframe) {
         iframe = document.createElement("iframe");
         const mergedIframeStyles = {
