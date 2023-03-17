@@ -9,7 +9,8 @@ const isDev = (): boolean => {
 
 const isStaging = (): boolean => {
   return !!(
-    typeof window !== "undefined" && window.location.origin.includes("zeet.app")
+    typeof window !== "undefined" &&
+    window.location.origin.includes("zeet-paper.zeet.app")
   );
 };
 
