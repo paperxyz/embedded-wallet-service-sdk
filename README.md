@@ -12,7 +12,7 @@
 [Paper](https://paper.xyz) is a developer-first NFT checkout solution that
 easily onboard users without wallets or cryptocurrencies.
 
-## [Documentation](https://docs.paper.xyz/docs/embedded-wallets-service-overview)
+## [Documentation](https://docs.withpaper.com/reference/embedded-wallet-service-overview)
 
 ## Installation
 
