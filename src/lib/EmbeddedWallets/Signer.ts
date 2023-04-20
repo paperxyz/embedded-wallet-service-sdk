@@ -27,7 +27,7 @@ export type SignerProcedureTypes = {
 export class EthersSigner extends Signer {
   protected querier: EmbeddedWalletIframeCommunicator<SignerProcedureTypes>;
   protected clientId: string;
-  private DEFAULT_ETHEREUM_CHAIN_ID = 1;
+
   constructor({
     provider,
     clientId,
@@ -49,14 +49,21 @@ export class EthersSigner extends Signer {
     return address;
   }
 
+  private async preSign() {
+    const chainId = (await this.provider?.getNetwork())?.chainId;
+    if (!chainId) {
+      throw new Error("Unable to fetch signer chain ID");
+    }
+    return { chainId };
+  }
+
   override async signMessage(message: string | Bytes): Promise<string> {
+    const { chainId } = await this.preSign();
     const { signedMessage } = await this.querier.call<SignMessageReturnType>({
       procedureName: "signMessage",
       params: {
         message,
-        chainId:
-          (await this.provider?.getNetwork())?.chainId ??
-          this.DEFAULT_ETHEREUM_CHAIN_ID,
+        chainId,
       },
     });
     return signedMessage;
@@ -65,14 +72,13 @@ export class EthersSigner extends Signer {
   override async signTransaction(
     transaction: TransactionRequest
   ): Promise<string> {
+    const { chainId } = await this.preSign();
     const { signedTransaction } =
       await this.querier.call<SignTransactionReturnType>({
         procedureName: "signTransaction",
         params: {
           transaction,
-          chainId:
-            (await this.provider?.getNetwork())?.chainId ??
-            this.DEFAULT_ETHEREUM_CHAIN_ID,
+          chainId,
         },
       });
     return signedTransaction;
